@@ -103,55 +103,6 @@
 }
 
 /*
- * Vapor da xícara do Café Conexão (formas animadas via SMIL no componente).
- * Aqui: fluxo subindo pelo fio (tracejado em movimento, suavizado pelo desfoque)
- * e uma "respiração" leve de opacidade.
- */
-.xicara-vapor-corpo,
-.xicara-vapor-brilho {
-  stroke-dasharray: 280 45;
-  animation: xicara-fluxo 2.6s linear infinite;
-}
-.xicara-vapor-corpo {
-  opacity: 0.75;
-}
-.xicara-vapor-brilho {
-  opacity: 0.55;
-}
-.xicara-vapor {
-  animation: xicara-respira 5s ease-in-out infinite;
-}
-
-@keyframes xicara-fluxo {
-  to {
-    stroke-dashoffset: -325;
-  }
-}
-@keyframes xicara-respira {
-  0%,
-  100% {
-    opacity: 0.75;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.xicara-vapor-estatico {
-  display: none;
-}
-
-/* Reduzir movimento: troca o vapor animado pela versão parada */
-@media (prefers-reduced-motion: reduce) {
-  .xicara-vapor {
-    display: none;
-  }
-  .xicara-vapor-estatico {
-    display: inline;
-  }
-}
-
-/*
  * Campos de lista (select). Todos os navegadores: seta própria e mesmo visual
  * dos outros campos. Chrome/Edge 135+: a lista aberta também é estilizada
  * (appearance: base-select); nos demais, a lista aberta é a nativa do sistema.
