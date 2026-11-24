@@ -18,5 +18,6 @@ Regras:
 - Datas no formato AAAA-MM-DD; horários entre aspas no formato 'HH:MM'.
 - Fotos em JPG ou PNG, de preferência com 1600 px de largura; o site gera as versões leves.
 - `coverAlt`/`alt`: descreva a foto para quem não pode vê-la (obrigatório).
+- `destaque: true` (entrevistas e coberturas) coloca a publicação como manchete da página inicial. Sem nenhum destaque, a manchete é a publicação mais recente.
 - `draft: true` esconde o conteúdo do site sem apagar o arquivo.
 - Rode `npm run build`: se faltar algum campo, o erro diz qual arquivo e qual campo.

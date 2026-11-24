@@ -1,103 +1,184 @@
 ---
+/**
+ * Página inicial no formato de portal de notícias:
+ * manchete + Café Conexão | últimas → entrevistas e eventos | agenda e Sobre a Lú.
+ * A manchete é a publicação marcada com `destaque: true` (ou a mais recente).
+ */
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { Hero } from '@/components/sections/Hero';
-import { CafeConexaoBanner } from '@/components/sections/CafeConexaoBanner';
-import { AboutTeaser } from '@/components/sections/AboutTeaser';
-import { ServicesTeaser } from '@/components/sections/ServicesTeaser';
 import { Container } from '@/components/ui/Container';
-import { SectionHeading } from '@/components/ui/SectionHeading';
-import { CameraIcon, MicIcon } from '@/components/ui/icons';
-import { CardGrid } from '@/components/content/Card';
-import { InterviewCard } from '@/components/content/InterviewCard';
-import { CoverageCard } from '@/components/content/CoverageCard';
-import { getLatest, getUpcomingEditions } from '@/lib/content';
-import { mapAll, paths, toCoverageCard, toInterviewCard } from '@/lib/cards';
+import { ButtonLink } from '@/components/ui/Button';
+import { Img } from '@/components/ui/Img';
+import { Manchete } from '@/components/noticias/Manchete';
+import { NewsList } from '@/components/noticias/NewsList';
+import { SectionBar } from '@/components/noticias/SectionBar';
+import { CafeDestaque } from '@/components/noticias/CafeDestaque';
+import { MiniAgenda } from '@/components/noticias/MiniAgenda';
+import { getFeed, getUpcomingAgenda, getUpcomingEditions, pickHeadline } from '@/lib/content';
+import { mapAll, paths, toAgendaItem, toNewsItem } from '@/lib/cards';
 import { formatDay, isoDay } from '@/lib/dates';
 import { responsiveImage } from '@/lib/images';
 import { SITE } from '@/lib/site';
 import { personSchema } from '@/lib/seo';
 import retrato from '@/assets/lu-retrato.jpg';
 
-const interviews = await mapAll(await getLatest('entrevistas', 3), toInterviewCard);
-const coverage = await mapAll(await getLatest('coberturas', 3), toCoverageCard);
-const [nextEdition] = await getUpcomingEditions();
+const feed = await getFeed();
+const headlineEntry = pickHeadline(feed);
+const rest = feed.filter((e) => e !== headlineEntry);
 
-const portrait = await responsiveImage(
-  retrato,
-  'Luciene Moraes, a Lú, sorrindo com o microfone da A Lú Te Conta!',
-  'heroPortrait',
+const manchete = headlineEntry && (await toNewsItem(headlineEntry, 'manchete'));
+const ultimas = await mapAll(rest.slice(0, 4), (e) => toNewsItem(e));
+
+// Seções de baixo: só o que ainda não apareceu no topo
+const shown = 1 + 4;
+const maisEntrevistas = await mapAll(
+  rest
+    .slice(shown - 1)
+    .filter((e) => e.collection === 'entrevistas')
+    .slice(0, 4),
+  (e) => toNewsItem(e),
 );
-const aboutPhoto = await responsiveImage(
-  retrato,
-  'Luciene Moraes, a Lú, segurando o microfone da A Lú Te Conta!',
-  'card',
+const maisEventos = await mapAll(
+  rest
+    .slice(shown - 1)
+    .filter((e) => e.collection === 'coberturas')
+    .slice(0, 4),
+  (e) => toNewsItem(e),
 );
+
+const [nextEdition] = await getUpcomingEditions();
+const agenda = (await getUpcomingAgenda()).slice(0, 4).map(toAgendaItem);
+const fotoLu = await responsiveImage(retrato, 'Luciene Moraes, a Lú', 'lista');
 ---
 
 <BaseLayout title={SITE.name} description={SITE.description} schema={[personSchema()]}>
-  <Hero
-    title="Histórias de quem faz a cidade acontecer"
-    subtitle="Entrevistas com empreendedores, artistas e profissionais, e a cobertura dos eventos que movimentam Franca e região."
-    portrait={portrait}
-    primary={{ label: 'Ver entrevistas', href: '/entrevistas' }}
-    secondary={{ label: 'Conheça o Café Conexão', href: '/cafe-conexao' }}
-  />
+  <h1 class="sr-only">
+    {SITE.name}: entrevistas, cobertura de eventos e o Café Conexão em Franca e região
+  </h1>
 
-  <CafeConexaoBanner
-    next={
-      nextEdition && {
-        title: nextEdition.data.title,
-        theme: nextEdition.data.theme,
-        dateLabel: formatDay(nextEdition.data.date),
-        isoDate: isoDay(nextEdition.data.date),
-        location: `${nextEdition.data.location}, ${nextEdition.data.city}`,
-        href: paths.edicao(nextEdition.id),
-      }
-    }
-  />
+  <Container size="wide" className="pt-6 pb-10 sm:pt-8">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div class="flex flex-col gap-8">
+        {manchete ? (
+          <Manchete item={manchete} />
+        ) : (
+          <p class="text-cinza">As primeiras publicações chegam em breve.</p>
+        )}
+        <CafeDestaque
+          next={
+            nextEdition && {
+              theme: nextEdition.data.theme,
+              dateLabel: formatDay(nextEdition.data.date),
+              isoDate: isoDay(nextEdition.data.date),
+              location: `${nextEdition.data.location}, ${nextEdition.data.city}`,
+              href: paths.edicao(nextEdition.id),
+            }
+          }
+        />
+      </div>
 
-  {interviews.length > 0 && (
-    <section aria-labelledby="ultimas-entrevistas" class="py-16">
-      <Container>
-        <SectionHeading
-          id="ultimas-entrevistas"
-          eyebrow="Entrevistas"
-          icon={MicIcon}
-          title="Últimas conversas"
+      {ultimas.length > 0 && (
+        <section aria-labelledby="ultimas">
+          <SectionBar id="ultimas" title="Últimas" />
+          <NewsList items={ultimas} />
+        </section>
+      )}
+    </div>
+  </Container>
+
+  <Container size="wide" className="grid gap-12 pb-14 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+    <div class="flex flex-col gap-12">
+      <section aria-labelledby="sec-entrevistas">
+        <SectionBar
+          id="sec-entrevistas"
+          title="Entrevistas"
           action={{ label: 'Ver todas', href: '/entrevistas' }}
         />
-        <CardGrid>
-          {interviews.map((item) => (
-            <li>
-              <InterviewCard item={item} />
-            </li>
-          ))}
-        </CardGrid>
-      </Container>
-    </section>
-  )}
+        {maisEntrevistas.length > 0 ? (
+          <NewsList items={maisEntrevistas} />
+        ) : (
+          <p class="text-noite/80 py-4">
+            Conversas com empreendedores, artistas e profissionais de Franca e região.{' '}
+            <a href="/entrevistas" class="text-azul font-semibold underline">
+              Veja todas as entrevistas
+            </a>
+            .
+          </p>
+        )}
+      </section>
 
-  {coverage.length > 0 && (
-    <section aria-labelledby="eventos-recentes" class="bg-creme py-16">
-      <Container>
-        <SectionHeading
-          id="eventos-recentes"
-          eyebrow="Cobertura de eventos"
-          icon={CameraIcon}
-          title="Eventos recentes"
+      <section aria-labelledby="sec-eventos">
+        <SectionBar
+          id="sec-eventos"
+          title="Eventos"
           action={{ label: 'Ver todos', href: '/eventos' }}
         />
-        <CardGrid>
-          {coverage.map((item) => (
-            <li>
-              <CoverageCard item={item} />
-            </li>
-          ))}
-        </CardGrid>
-      </Container>
-    </section>
-  )}
+        {maisEventos.length > 0 ? (
+          <NewsList items={maisEventos} />
+        ) : (
+          <p class="text-noite/80 py-4">
+            Fotos e bastidores dos eventos que movimentam a cidade.{' '}
+            <a href="/eventos" class="text-azul font-semibold underline">
+              Veja todas as coberturas
+            </a>
+            .
+          </p>
+        )}
+      </section>
+    </div>
 
-  <AboutTeaser photo={aboutPhoto} />
-  <ServicesTeaser />
+    <aside class="flex flex-col gap-12" aria-label="Agenda e sobre a Lú">
+      <section aria-labelledby="sec-agenda">
+        <SectionBar
+          id="sec-agenda"
+          title="Agenda"
+          action={{ label: 'Ver agenda', href: '/eventos/agenda' }}
+        />
+        {agenda.length > 0 ? (
+          <MiniAgenda items={agenda} />
+        ) : (
+          <p class="text-noite/80 py-4">Nenhum evento agendado no momento.</p>
+        )}
+      </section>
+
+      <section aria-labelledby="sec-lu" class="bg-creme rounded-2xl p-5">
+        <div class="flex items-center gap-4">
+          <div class="size-20 shrink-0 overflow-hidden rounded-full">
+            <Img image={fotoLu} className="object-top" />
+          </div>
+          <div>
+            <p class="text-laranja-texto text-sm font-bold uppercase">Quem conta</p>
+            <h2 id="sec-lu" class="text-noite text-xl">
+              Luciene Moraes, a Lú
+            </h2>
+          </div>
+        </div>
+        <p class="text-noite/80 mt-4">
+          Comunicadora e apresentadora da A Lú Te Conta!: entrevista quem faz a cidade acontecer,
+          cobre eventos e criou o Café Conexão.
+        </p>
+        <a href="/sobre" class="text-azul mt-3 inline-block font-semibold underline">
+          Conheça a Lú
+        </a>
+      </section>
+    </aside>
+  </Container>
+
+  <section aria-labelledby="sec-marcas" class="bg-azul text-branco">
+    <Container
+      size="wide"
+      className="flex flex-col gap-5 py-10 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div>
+        <h2 id="sec-marcas" class="text-branco text-2xl">
+          Quer a Lú no seu evento?
+        </h2>
+        <p class="text-branco/90 mt-1">
+          Cobertura com fotos, vídeos curtos, entrevistas e divulgação nos canais da Lú.
+        </p>
+      </div>
+      <ButtonLink href="/para-marcas" variant="accent" size="lg" className="shrink-0">
+        Ver pacotes
+      </ButtonLink>
+    </Container>
+  </section>
 </BaseLayout>

@@ -51,7 +51,15 @@ export function FormShell({
       {children}
       <Honeypot />
       {turnstileSiteKey && (
-        <div className="cf-turnstile" data-sitekey={turnstileSiteKey} data-language="pt-BR" />
+        // Tema claro (combina com o site mesmo com o sistema em modo escuro) e
+        // "interaction-only": a caixa só aparece se o Cloudflare pedir uma verificação.
+        <div
+          className="cf-turnstile"
+          data-sitekey={turnstileSiteKey}
+          data-language="pt-BR"
+          data-theme="light"
+          data-appearance="interaction-only"
+        />
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

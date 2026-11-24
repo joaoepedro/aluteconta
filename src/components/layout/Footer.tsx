@@ -39,11 +39,6 @@ export function Footer() {
                 </a>
               </li>
             ))}
-            <li>
-              <a href="/eventos/agenda" className="text-branco/90 hover:text-laranja">
-                Agenda
-              </a>
-            </li>
           </ul>
         </nav>
 

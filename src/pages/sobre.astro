@@ -69,7 +69,7 @@ const topics = [
   schema={[breadcrumbSchema(crumbs), personSchema()]}
 >
   <Container className="pt-8 pb-16 sm:pt-12">
-    <Breadcrumbs items={crumbs} />
+    <Breadcrumbs items={crumbs} center="md" />
     <div class="grid items-start gap-10 md:grid-cols-[1fr_1.3fr]">
       <div class="relative">
         <div class="aspect-[4/5] overflow-hidden rounded-[2rem]">
@@ -89,7 +89,7 @@ const topics = [
           className="bg-branco absolute -bottom-4 -left-3 shadow-lg"
         />
       </div>
-      <div>
+      <div class="max-md:text-center">
         <p class="text-laranja-texto text-sm font-semibold tracking-wide uppercase">Sobre a Lú</p>
         <h1 class="mt-2 text-4xl sm:text-5xl">{SITE.person.name}</h1>
         <p class="text-cinza mt-2 text-lg">{SITE.person.jobTitle}</p>
@@ -107,7 +107,7 @@ const topics = [
           </p>
         </div>
         <h2 class="mt-8 text-xl">Sobre o que a Lú conta</h2>
-        <ul class="mt-3 flex flex-wrap gap-2">
+        <ul class="mt-3 flex flex-wrap gap-2 max-md:justify-center">
           {topics.map((t) => (
             <li class="bg-creme text-noite inline-flex items-center gap-2 rounded-full py-2 pr-4 pl-3 text-sm font-semibold">
               <t.icon className="text-laranja-texto size-4" />
@@ -115,7 +115,7 @@ const topics = [
             </li>
           ))}
         </ul>
-        <div class="mt-8 flex flex-wrap items-center gap-4">
+        <div class="mt-8 flex flex-wrap items-center gap-4 max-md:justify-center">
           <ButtonLink href={whatsappLink('Olá, Lú! Vim pelo site.')} variant="accent">
             Falar com a Lú
           </ButtonLink>

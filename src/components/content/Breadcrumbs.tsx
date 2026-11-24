@@ -1,10 +1,24 @@
 import type { Crumb } from '@/lib/seo';
+import { cn } from '../ui/cn';
 
 /** Trilha de navegação. O último item é a página atual. */
-export function Breadcrumbs({ items }: { items: Crumb[] }) {
+export function Breadcrumbs({
+  items,
+  center = 'none',
+}: {
+  items: Crumb[];
+  /** Centraliza no celular/tablet (topo de página com título centralizado) */
+  center?: 'none' | 'md' | 'lg';
+}) {
   return (
     <nav aria-label="Você está em" className="text-cinza mb-6 text-sm">
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <ol
+        className={cn(
+          'flex flex-wrap items-center gap-x-2 gap-y-1',
+          center === 'lg' && 'max-lg:justify-center',
+          center === 'md' && 'max-md:justify-center',
+        )}
+      >
         {items.map((item, i) => {
           const last = i === items.length - 1;
           return (

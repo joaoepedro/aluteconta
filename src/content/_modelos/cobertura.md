@@ -14,6 +14,7 @@ gallery: # opcional
 youtubeId: 'XXXXXXXXXXX' # opcional
 brands: [nome-da-marca] # opcional: ids de arquivos em src/content/marcas
 tags: []
+destaque: false # true = manchete da página inicial (vale o mais recente marcado)
 draft: false
 ---
 

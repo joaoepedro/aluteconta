@@ -27,16 +27,19 @@ export function SectionHeading({
   className,
 }: Props) {
   const Heading = level;
+  // Título de página (h1): centralizado no celular/tablet
+  const center = level === 'h1';
   return (
     <div
       className={cn(
         'mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between',
+        center && 'max-lg:items-center max-lg:text-center',
         className,
       )}
     >
-      <div className="max-w-2xl">
+      <div className={cn('max-w-2xl', center && 'max-lg:mx-auto')}>
         {(eyebrow || icon) && (
-          <div className="mb-3 flex items-center gap-3">
+          <div className={cn('mb-3 flex items-center gap-3', center && 'max-lg:justify-center')}>
             {icon && <IconBadge icon={icon} size="sm" />}
             {eyebrow && (
               <p className="text-laranja-texto text-sm font-semibold tracking-wide uppercase">

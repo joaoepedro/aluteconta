@@ -9,5 +9,4 @@ location: 'Loja Exemplo'
 address: 'Av. Exemplo, 500'
 city: Franca
 organizer: 'Loja Exemplo'
-url: https://www.sympla.com.br/
 ---

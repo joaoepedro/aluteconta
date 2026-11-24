@@ -93,18 +93,18 @@ const steps = [
       />
     )}
     <Container className="relative grid items-center gap-10 lg:grid-cols-[1.4fr_1fr]">
-      <div>
-        <Breadcrumbs items={crumbs} />
+      <div class="max-lg:text-center">
+        <Breadcrumbs items={crumbs} center="lg" />
         <p class="text-laranja-texto text-sm font-semibold tracking-wide uppercase">
           Um projeto A Lú Te Conta!
         </p>
         <h1 class="mt-2 text-4xl sm:text-6xl">Café Conexão</h1>
-        <p class="text-noite/80 mt-5 max-w-3xl text-lg sm:text-xl">
+        <p class="text-noite/80 mt-5 max-w-3xl text-lg max-lg:mx-auto sm:text-xl">
           Um encontro que reúne a comunidade, empreendedores, empresários e profissionais liberais.
           Convidados especiais abrem uma roda de conversa sobre o tema da sua especialidade e, no
           fim, atividades práticas e oficinas fecham o que foi conversado.
         </p>
-        <div class="mt-8 flex flex-wrap gap-3">
+        <div class="mt-8 flex flex-wrap gap-3 max-lg:justify-center">
           <ButtonLink href="#participar" variant="accent" size="lg">
             Quero participar
           </ButtonLink>

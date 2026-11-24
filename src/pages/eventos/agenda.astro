@@ -21,7 +21,6 @@ const schemas = entries.map((e) =>
     location: e.data.location,
     address: e.data.address,
     city: e.data.city,
-    registrationUrl: e.data.url,
   }),
 );
 ---
@@ -32,7 +31,7 @@ const schemas = entries.map((e) =>
   title="Agenda"
   seoTitle="Agenda de eventos em Franca e região"
   eyebrow="O que vem por aí"
-  description="Próximos eventos, encontros e experiências em Franca e região, com inscrições e link para salvar na sua agenda."
+  description="Próximos eventos, encontros e experiências em Franca e região, com link para salvar na sua agenda."
   crumbs={[
     { label: 'Início', href: '/' },
     { label: 'Eventos', href: '/eventos' },

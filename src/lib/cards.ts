@@ -9,10 +9,11 @@ import type {
   CoverageCardData,
   EditionCardData,
   InterviewCardData,
+  NewsItemData,
 } from '@/components/content/types';
 import { googleCalendarUrl } from './calendar';
 import { dayBadge, formatDay, isUpcoming, isoDay } from './dates';
-import { responsiveImage } from './images';
+import { responsiveImage, type SIZES } from './images';
 import { EVENT_TYPES, INTERVIEW_CATEGORIES } from './taxonomy';
 
 export const paths = {
@@ -104,7 +105,6 @@ export function toAgendaItem(e: CollectionEntry<'agenda'>): AgendaItemData {
     isoDate: isoDay(data.date),
     timeLabel,
     location,
-    url: data.url,
     googleCalendarUrl: googleCalendarUrl({
       title: data.title,
       description: data.description,
@@ -112,10 +112,40 @@ export function toAgendaItem(e: CollectionEntry<'agenda'>): AgendaItemData {
       date: data.date,
       time: data.time,
       endTime: data.endTime,
-      url: data.url,
     }),
     icsHref: paths.ics(e.id),
   };
 }
 
 export const mapAll = <T, R>(items: T[], fn: (item: T) => Promise<R>) => Promise.all(items.map(fn));
+
+type FeedEntry = CollectionEntry<'entrevistas'> | CollectionEntry<'coberturas'>;
+
+/** Entrevista ou cobertura no formato de notícia (manchete e listas) */
+export async function toNewsItem(
+  e: FeedEntry,
+  variant: keyof typeof SIZES = 'lista',
+): Promise<NewsItemData> {
+  const common = {
+    id: `${e.collection}/${e.id}`,
+    title: e.data.title,
+    description: e.data.description,
+    image: await responsiveImage(e.data.cover, e.data.coverAlt, variant),
+    dateLabel: formatDay(e.data.date),
+    isoDate: isoDay(e.data.date),
+  };
+  if (e.collection === 'entrevistas') {
+    return {
+      ...common,
+      href: paths.entrevista(e.id),
+      kind: 'Entrevista',
+      kicker: INTERVIEW_CATEGORIES[e.data.category],
+    };
+  }
+  return {
+    ...common,
+    href: paths.cobertura(e.id),
+    kind: 'Evento',
+    kicker: EVENT_TYPES[e.data.eventType],
+  };
+}

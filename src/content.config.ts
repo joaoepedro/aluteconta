@@ -56,6 +56,8 @@ const entrevistas = defineCollection({
       /** Frase de destaque mostrada no card e no topo da página */
       quote: z.string().max(180).optional(),
       youtubeId,
+      /** true = vira a manchete da página inicial (senão, vale a publicação mais recente) */
+      destaque: z.boolean().default(false),
     }),
 });
 
@@ -75,6 +77,8 @@ const coberturas = defineCollection({
       youtubeId,
       /** Empresas/marcas citadas: liga com páginas de Marcas em Destaque */
       brands: z.array(reference('marcas')).default([]),
+      /** true = vira a manchete da página inicial (senão, vale a publicação mais recente) */
+      destaque: z.boolean().default(false),
     }),
 });
 
@@ -163,7 +167,6 @@ const agenda = defineCollection({
     address: z.string().optional(),
     city: z.string().default('Franca'),
     organizer: z.string().optional(),
-    url: z.url().optional(),
     draft: z.boolean().default(false),
   }),
 });

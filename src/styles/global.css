@@ -52,14 +52,52 @@
   }
 }
 
+/*
+ * Troca de página suave (navegadores atuais: Chrome, Edge, Safari 18.2+).
+ * O cabeçalho do site (view-transition-name no Header.astro) fica parado e só o conteúdo faz a transição. Nos demais
+ * navegadores a navegação continua normal.
+ */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 @layer base {
   html {
     @apply bg-branco text-noite antialiased;
-    scroll-padding-top: 5rem;
+    scroll-padding-top: 7.5rem;
   }
 
   body {
     @apply font-sans text-base leading-relaxed;
+    /* rede de segurança: nada empurra a página para os lados no celular */
+    overflow-x: clip;
+  }
+
+  /*
+   * iPhone (Safari e Chrome usam o mesmo motor): o campo de data tem largura
+   * mínima própria e ignora width: 100%, alargando a página. Aqui ele passa a
+   * obedecer à largura do formulário e mantém a altura dos outros campos.
+   */
+  input[type='date'] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    min-width: 0;
+    min-height: 3.25rem;
+  }
+  input[type='date']::-webkit-date-and-time-value {
+    text-align: left;
   }
 
   h1,

@@ -19,7 +19,6 @@ export const GET: APIRoute<{ entry: CollectionEntry<'agenda'> }> = ({ props }) =
       date: d.date,
       time: d.time,
       endTime: d.endTime,
-      url: d.url,
     },
     entry.id,
   );

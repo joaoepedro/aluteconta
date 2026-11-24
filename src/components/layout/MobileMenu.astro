@@ -1,24 +1,27 @@
 ---
 /**
- * Menu do celular. Feito em Astro + script mínimo (≈1 KB) em vez de React,
- * para que páginas de conteúdo não precisem carregar o React no celular.
+ * Menu completo (botão ☰ do cabeçalho), em todas as larguras.
+ * Feito em Astro + script mínimo (≈1 KB) em vez de React, para que páginas
+ * de conteúdo não precisem carregar o React.
+ * O painel abre logo abaixo do cabeçalho (posição relativa ao <header>).
  */
-import { isActive, type NavItem } from '@/lib/navigation';
+import type { NavItem } from '@/lib/navigation';
 
 interface Props {
   items: NavItem[];
-  currentPath: string;
+  cta: NavItem;
+  active: string | undefined;
 }
-const { items, currentPath } = Astro.props;
+const { items, cta, active } = Astro.props;
 ---
 
-<div class="lg:hidden" data-mobile-menu>
+<div data-mobile-menu class="lg:hidden">
   <button
     type="button"
     aria-expanded="false"
     aria-controls="menu-mobile"
     data-menu-toggle
-    class="text-azul flex size-11 items-center justify-center rounded-full"
+    class="text-azul hover:bg-creme -ml-2 flex size-11 items-center justify-center rounded-full"
   >
     <span class="sr-only" data-menu-label>
       Abrir menu
@@ -30,6 +33,7 @@ const { items, currentPath } = Astro.props;
       fill="none"
       stroke="currentColor"
       stroke-width="2"
+      stroke-linecap="round"
     >
       <path data-icon-open d="M4 7h16M4 12h16M4 17h16"></path>
       <path data-icon-close d="M6 6l12 12M18 6L6 18" class="hidden"></path>
@@ -39,30 +43,40 @@ const { items, currentPath } = Astro.props;
   <div
     id="menu-mobile"
     hidden
-    class="bg-branco fixed inset-x-0 top-16 bottom-0 z-40 flex-col overflow-y-auto overscroll-contain px-4 pt-4 pb-10 [&:not([hidden])]:flex"
+    class="absolute inset-x-0 top-full z-40 h-[calc(100dvh-100%)] [&:not([hidden])]:flex"
   >
-    <nav aria-label="Menu principal">
-      <ul class="flex flex-col gap-1">
-        {items.map((item) => {
-          const active = isActive(currentPath, item.href);
-          return (
-            <li>
-              <a
-                href={item.href}
-                aria-current={active ? 'page' : undefined}
-                class:list={[
-                  'font-display block rounded-xl px-4 py-3 text-lg font-semibold no-underline',
-                  item.highlight ? 'bg-laranja text-noite mt-3 text-center' : 'text-azul',
-                  active && !item.highlight && 'bg-creme',
-                ]}
-              >
-                {item.label}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <div class="bg-branco border-borda h-full w-full overflow-y-auto overscroll-contain px-4 pt-4 pb-10 sm:max-w-sm sm:border-r sm:shadow-xl">
+      <nav aria-label="Menu principal">
+        <ul class="flex flex-col gap-1">
+          {items.map((item) => {
+            const isCurrent = active === item.href;
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  class:list={[
+                    'font-display block rounded-xl px-4 py-3 text-lg font-semibold no-underline',
+                    item.highlight ? 'text-laranja-texto' : 'text-azul',
+                    isCurrent ? 'bg-creme' : 'hover:bg-creme',
+                  ]}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+        <a
+          href={cta.href}
+          class="bg-laranja text-noite font-display mt-6 block rounded-full px-4 py-3 text-center text-lg font-bold no-underline hover:brightness-95"
+        >
+          Pedir {cta.label.toLowerCase()}
+        </a>
+      </nav>
+    </div>
+    <!-- área escura ao lado do painel (tablet/desktop): clicar fecha o menu -->
+    <div data-menu-backdrop class="bg-noite/40 hidden flex-1 sm:block"></div>
   </div>
 </div>
 
@@ -89,6 +103,10 @@ const { items, currentPath } = Astro.props;
     button.addEventListener('click', () =>
       setOpen(button.getAttribute('aria-expanded') !== 'true'),
     );
+    panel.querySelector('[data-menu-backdrop]')?.addEventListener('click', () => {
+      setOpen(false);
+      button.focus();
+    });
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !panel.hidden) {
         setOpen(false);

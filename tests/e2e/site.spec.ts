@@ -126,6 +126,7 @@ test('menu do celular abre ocupando a tela', async ({ page, isMobile }) => {
   for (const name of [
     'Entrevistas',
     'Eventos',
+    'Agenda',
     'Para Marcas',
     'Sobre a Lú',
     'Contato',
@@ -199,7 +200,8 @@ test('cabeçalho não quebra em nenhuma largura', async ({ page }) => {
   await page.goto('/eventos');
   const header = page.locator('header');
   const box = await header.boundingBox();
-  expect(box!.height).toBeLessThanOrEqual(66);
+  // duas linhas: logo (56–64 px) + barra de seções (44 px)
+  expect(box!.height).toBeLessThanOrEqual(112);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth,
   );
@@ -211,4 +213,40 @@ test('Instagram aponta para @colunistalucienemoraes', async ({ page }) => {
   await expect(
     page.getByRole('link', { name: /Instagram @colunistalucienemoraes/ }).first(),
   ).toHaveAttribute('href', 'https://www.instagram.com/colunistalucienemoraes');
+});
+
+test('barra de seções: todas as seções acessíveis e a atual marcada', async ({ page }) => {
+  await page.goto('/eventos/agenda');
+  const bar = page.getByRole('navigation', { name: 'Seções do site' });
+  for (const name of [
+    'Café Conexão',
+    'Entrevistas',
+    'Eventos',
+    'Agenda',
+    'Para Marcas',
+    'Sobre a Lú',
+    'Contato',
+  ]) {
+    await expect(bar.getByRole('link', { name, exact: true })).toHaveCount(1);
+  }
+  await expect(bar.getByRole('link', { name: 'Agenda', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(bar.getByRole('link', { name: 'Eventos', exact: true })).not.toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  // celular: desliza de lado sem barra de rolagem visível
+  await expect(bar.locator('ul')).toHaveCSS('scrollbar-width', 'none');
+});
+
+test('página inicial abre com a manchete e o destaque do Café Conexão', async ({ page }) => {
+  await page.goto('/');
+  const manchete = page.locator('main article').first();
+  await expect(manchete.getByRole('heading', { level: 2 })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: /Café Conexão|Dia da Mulher/ }).first(),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Últimas' })).toBeVisible();
 });

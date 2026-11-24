@@ -17,6 +17,7 @@ series: 'Segredo do Chef' # opcional: série recorrente
 quote: 'Frase de destaque (opcional, até 180 caracteres)'
 youtubeId: 'XXXXXXXXXXX' # opcional: ID do vídeo (11 caracteres)
 tags: [tema1, tema2]
+destaque: false # true = manchete da página inicial (vale o mais recente marcado)
 draft: false
 ---
 

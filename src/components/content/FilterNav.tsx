@@ -28,7 +28,10 @@ type Props = {
 export function FilterNav({ label, items, current }: Props) {
   return (
     <nav aria-label={label} data-filtro-nav className="relative -mx-4 mb-8 sm:mx-0">
-      <ul className="no-scrollbar fade-end flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:flex-wrap sm:overflow-visible sm:[mask-image:none] sm:px-0">
+      <ul
+        data-fade-scroll
+        className="no-scrollbar fade-end flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 pb-1 sm:flex-wrap sm:overflow-visible sm:[mask-image:none] sm:px-0"
+      >
         {items.map((item) => (
           <li key={item.href} className="shrink-0 snap-start">
             <a

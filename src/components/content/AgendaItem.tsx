@@ -18,16 +18,6 @@ export function AgendaItem({ item }: { item: AgendaItemData }) {
         </p>
         <p className="text-noite/80 mt-2">{item.description}</p>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold">
-          {item.url && (
-            <a
-              href={item.url}
-              className="text-azul underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Inscrições e informações<span className="sr-only">, abre em nova aba</span>
-            </a>
-          )}
           <a
             href={item.googleCalendarUrl}
             className="text-azul underline"

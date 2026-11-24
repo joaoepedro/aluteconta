@@ -55,9 +55,19 @@ export type AgendaItemData = {
   isoDate: string;
   timeLabel?: string | undefined;
   location: string;
-  url?: string | undefined;
   googleCalendarUrl: string;
   icsHref: string;
 };
 
 export type GalleryImage = { thumb: ResponsiveImage; full: string };
+
+/** Publicação no formato de portal (manchete e listas da página inicial) */
+export type NewsItemData = CardBase & {
+  id: string;
+  /** Tipo de publicação: "Entrevista" ou "Evento" */
+  kind: string;
+  /** Categoria (entrevistas) ou tipo de evento (coberturas) */
+  kicker: string;
+  dateLabel: string;
+  isoDate: string;
+};

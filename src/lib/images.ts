@@ -18,8 +18,10 @@ export type ResponsiveImage = {
 export const SIZES = {
   card: '(min-width: 1024px) 384px, (min-width: 640px) 50vw, 100vw',
   hero: '100vw',
-  /** Retrato do topo: oculto no celular, então pede a menor versão */
-  heroPortrait: '(min-width: 1024px) 384px, 1px',
+  /** Manchete da página inicial: ~2/3 da largura no desktop */
+  manchete: '(min-width: 1280px) 760px, (min-width: 1024px) 62vw, 100vw',
+  /** Miniatura das listas de notícias */
+  lista: '(min-width: 640px) 160px, 112px',
   content: '(min-width: 896px) 832px, 100vw',
   thumb: '(min-width: 640px) 25vw, 50vw',
   logo: '160px',
@@ -28,7 +30,8 @@ export const SIZES = {
 const WIDTHS = {
   card: [360, 540, 768],
   hero: [640, 1024, 1440, 1920],
-  heroPortrait: [360, 540, 768],
+  manchete: [480, 768, 1080, 1520],
+  lista: [160, 320],
   content: [480, 832, 1280],
   thumb: [240, 360, 540],
   logo: [160, 320],

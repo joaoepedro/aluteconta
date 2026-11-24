@@ -20,7 +20,7 @@ function Field({ label, hint, children }: FieldProps) {
   const id = useId();
   const hintId = hint ? `${id}-dica` : undefined;
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5">
       <label htmlFor={id} className="text-noite font-semibold">
         {label}
       </label>

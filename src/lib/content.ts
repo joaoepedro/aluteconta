@@ -50,3 +50,20 @@ export async function getBrands({ featuredOnly = false } = {}) {
   );
   return all.sort((a, b) => a.data.name.localeCompare(b.data.name, 'pt-BR'));
 }
+
+/**
+ * Entrevistas e coberturas juntas, da mais nova para a mais antiga
+ * (o "feed" da página inicial).
+ */
+export async function getFeed() {
+  const [entrevistas, coberturas] = await Promise.all([
+    getPublished('entrevistas'),
+    getPublished('coberturas'),
+  ]);
+  return [...entrevistas, ...coberturas].sort(newestFirst);
+}
+
+/** Manchete: a mais recente marcada com `destaque: true`; senão, a mais recente */
+export function pickHeadline<T extends { data: { destaque: boolean } }>(feed: T[]): T | undefined {
+  return feed.find((e) => e.data.destaque) ?? feed[0];
+}

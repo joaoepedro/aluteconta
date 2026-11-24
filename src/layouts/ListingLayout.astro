@@ -77,8 +77,8 @@ const {
       </>
     )}
     <Container className="relative flex items-center justify-between gap-10">
-      <div class:list={['min-w-0', backgroundImage && 'lg:max-w-[34rem]']}>
-        <Breadcrumbs items={crumbs} />
+      <div class:list={['w-full min-w-0', backgroundImage && 'lg:max-w-[34rem]']}>
+        <Breadcrumbs items={crumbs} center="lg" />
         <div data-filtro-titulo-wrap>
           <SectionHeading
             level="h1"

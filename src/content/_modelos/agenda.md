@@ -8,6 +8,5 @@ location: 'Nome do local'
 address: 'Endereço' # opcional
 city: Franca
 organizer: 'Quem organiza' # opcional
-url: https://... # opcional: inscrições ou mais informações
 draft: false
 ---
