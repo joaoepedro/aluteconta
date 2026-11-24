@@ -1,0 +1,103 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Hero } from '@/components/sections/Hero';
+import { CafeConexaoBanner } from '@/components/sections/CafeConexaoBanner';
+import { AboutTeaser } from '@/components/sections/AboutTeaser';
+import { ServicesTeaser } from '@/components/sections/ServicesTeaser';
+import { Container } from '@/components/ui/Container';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { CameraIcon, MicIcon } from '@/components/ui/icons';
+import { CardGrid } from '@/components/content/Card';
+import { InterviewCard } from '@/components/content/InterviewCard';
+import { CoverageCard } from '@/components/content/CoverageCard';
+import { getLatest, getUpcomingEditions } from '@/lib/content';
+import { mapAll, paths, toCoverageCard, toInterviewCard } from '@/lib/cards';
+import { formatDay, isoDay } from '@/lib/dates';
+import { responsiveImage } from '@/lib/images';
+import { SITE } from '@/lib/site';
+import { personSchema } from '@/lib/seo';
+import retrato from '@/assets/lu-retrato.jpg';
+
+const interviews = await mapAll(await getLatest('entrevistas', 3), toInterviewCard);
+const coverage = await mapAll(await getLatest('coberturas', 3), toCoverageCard);
+const [nextEdition] = await getUpcomingEditions();
+
+const portrait = await responsiveImage(
+  retrato,
+  'Luciene Moraes, a Lú, sorrindo com o microfone da A Lú Te Conta!',
+  'heroPortrait',
+);
+const aboutPhoto = await responsiveImage(
+  retrato,
+  'Luciene Moraes, a Lú, segurando o microfone da A Lú Te Conta!',
+  'card',
+);
+---
+
+<BaseLayout title={SITE.name} description={SITE.description} schema={[personSchema()]}>
+  <Hero
+    title="Histórias de quem faz a cidade acontecer"
+    subtitle="Entrevistas com empreendedores, artistas e profissionais, e a cobertura dos eventos que movimentam Franca e região."
+    portrait={portrait}
+    primary={{ label: 'Ver entrevistas', href: '/entrevistas' }}
+    secondary={{ label: 'Conheça o Café Conexão', href: '/cafe-conexao' }}
+  />
+
+  <CafeConexaoBanner
+    next={
+      nextEdition && {
+        title: nextEdition.data.title,
+        theme: nextEdition.data.theme,
+        dateLabel: formatDay(nextEdition.data.date),
+        isoDate: isoDay(nextEdition.data.date),
+        location: `${nextEdition.data.location}, ${nextEdition.data.city}`,
+        href: paths.edicao(nextEdition.id),
+      }
+    }
+  />
+
+  {interviews.length > 0 && (
+    <section aria-labelledby="ultimas-entrevistas" class="py-16">
+      <Container>
+        <SectionHeading
+          id="ultimas-entrevistas"
+          eyebrow="Entrevistas"
+          icon={MicIcon}
+          title="Últimas conversas"
+          action={{ label: 'Ver todas', href: '/entrevistas' }}
+        />
+        <CardGrid>
+          {interviews.map((item) => (
+            <li>
+              <InterviewCard item={item} />
+            </li>
+          ))}
+        </CardGrid>
+      </Container>
+    </section>
+  )}
+
+  {coverage.length > 0 && (
+    <section aria-labelledby="eventos-recentes" class="bg-creme py-16">
+      <Container>
+        <SectionHeading
+          id="eventos-recentes"
+          eyebrow="Cobertura de eventos"
+          icon={CameraIcon}
+          title="Eventos recentes"
+          action={{ label: 'Ver todos', href: '/eventos' }}
+        />
+        <CardGrid>
+          {coverage.map((item) => (
+            <li>
+              <CoverageCard item={item} />
+            </li>
+          ))}
+        </CardGrid>
+      </Container>
+    </section>
+  )}
+
+  <AboutTeaser photo={aboutPhoto} />
+  <ServicesTeaser />
+</BaseLayout>

@@ -1,0 +1,84 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Breadcrumbs } from '@/components/content/Breadcrumbs';
+import { QuoteForm } from '@/components/forms/QuoteForm';
+import { ButtonLink } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { SocialLinks } from '@/components/ui/SocialLinks';
+import { ChatIcon, MailIcon, MapPinIcon, WhatsAppIcon } from '@/components/ui/icons';
+import { breadcrumbSchema } from '@/lib/seo';
+import { SITE, whatsappLink } from '@/lib/site';
+
+const crumbs = [
+  { label: 'Início', href: '/' },
+  { label: 'Contato', href: '/contato' },
+];
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+---
+
+<BaseLayout
+  title="Contato"
+  description="Fale com a A Lú Te Conta! pelo WhatsApp, e-mail ou formulário: entrevistas, cobertura de eventos, parcerias e Café Conexão."
+  schema={[breadcrumbSchema(crumbs)]}
+>
+  <Container className="pt-8 pb-16 sm:pt-12">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading
+      level="h1"
+      eyebrow="Contato"
+      icon={ChatIcon}
+      title="Vamos conversar?"
+      description="Entrevistas, cobertura de eventos, parcerias ou Café Conexão: escolha o canal que preferir."
+    />
+
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
+      <aside aria-label="Canais de contato" class="space-y-4">
+        <div class="bg-azul text-branco relative overflow-hidden rounded-2xl p-6">
+          <WhatsAppIcon className="text-branco/10 absolute -right-6 -bottom-6 size-36" />
+          <div class="relative">
+            <h2 class="text-branco flex items-center gap-2 text-xl">
+              <WhatsAppIcon className="text-laranja size-6" /> WhatsApp
+            </h2>
+            <p class="text-branco/90 mt-1">O jeito mais rápido de falar com a Lú.</p>
+            <ButtonLink
+              href={whatsappLink('Olá, Lú! Vim pelo site.')}
+              variant="accent"
+              className="mt-4"
+            >
+              Abrir WhatsApp
+            </ButtonLink>
+          </div>
+        </div>
+        <div class="border-borda flex gap-4 rounded-2xl border-2 p-6">
+          <IconBadge icon={MailIcon} size="md" />
+          <div class="min-w-0">
+            <h2 class="text-xl">E-mail</h2>
+            <a
+              href={`mailto:${SITE.contact.email}`}
+              class="text-azul mt-1 inline-block font-semibold break-all underline"
+            >
+              {SITE.contact.email}
+            </a>
+          </div>
+        </div>
+        <div class="border-borda rounded-2xl border-2 p-6">
+          <h2 class="mb-3 text-xl">Acompanhe nas redes</h2>
+          <SocialLinks networks={['instagram', 'youtube']} />
+        </div>
+        <p class="text-cinza flex items-center gap-2">
+          <MapPinIcon className="text-laranja-texto size-5" />
+          Atendimento em {SITE.address.city} – {SITE.address.region} e região.
+        </p>
+      </aside>
+
+      <section aria-labelledby="form-contato">
+        <h2 id="form-contato" class="mb-6 text-2xl">
+          Pedir orçamento
+        </h2>
+        <QuoteForm client:visible turnstileSiteKey={turnstileSiteKey} />
+      </section>
+    </div>
+  </Container>
+</BaseLayout>

@@ -1,0 +1,122 @@
+---
+/**
+ * Listagem de coberturas com filtro por tipo de evento. Usada por /eventos e
+ * /eventos/tipo/[tipo]. Mesma lógica da listagem de entrevistas.
+ */
+import ListingLayout from '@/layouts/ListingLayout.astro';
+import { CardGrid } from '@/components/content/Card';
+import { CoverageCard } from '@/components/content/CoverageCard';
+import { FilterNav, type FilterItem } from '@/components/content/FilterNav';
+import { ButtonLink } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { CalendarIcon, CameraIcon, PartyIcon } from '@/components/ui/icons';
+import { getPublished } from '@/lib/content';
+import { toCoverageCard } from '@/lib/cards';
+import { responsiveImage } from '@/lib/images';
+import { SITE } from '@/lib/site';
+import { EVENT_TYPES, type EventType } from '@/lib/taxonomy';
+import fundo from '@/assets/fundos/eventos-brinde.jpg';
+
+interface Props {
+  tipo?: EventType | undefined;
+}
+const { tipo } = Astro.props;
+
+const entries = await getPublished('coberturas');
+const cards = await Promise.all(
+  entries.map(async (e) => ({ filtro: e.data.eventType, card: await toCoverageCard(e) })),
+);
+const visiveis = cards.filter((c) => !tipo || c.filtro === tipo).length;
+
+const doc = (t: string) => `${t} | ${SITE.name}`;
+const filters: FilterItem[] = [
+  {
+    label: 'Todos',
+    href: '/eventos',
+    value: '',
+    heading: 'Cobertura de eventos',
+    docTitle: doc('Cobertura de eventos em Franca e região'),
+  },
+  ...(Object.entries(EVENT_TYPES) as [EventType, string][]).map(([slug, label]) => ({
+    label,
+    href: `/eventos/tipo/${slug}`,
+    value: slug,
+    heading: `Eventos: ${label}`,
+    docTitle: doc(`Cobertura de ${label.toLowerCase()} em Franca`),
+  })),
+];
+const atual = filters.find((f) => f.value === (tipo ?? ''))!;
+
+const label = tipo ? EVENT_TYPES[tipo] : undefined;
+const crumbs = [
+  { label: 'Início', href: '/' },
+  { label: 'Eventos', href: '/eventos' },
+  ...(label ? [{ label, href: atual.href }] : []),
+];
+
+// Foto de fundo do topo. Para voltar ao desenho de ícones, remova backgroundImage abaixo.
+const backgroundImage = await responsiveImage(fundo, '', 'hero');
+---
+
+<ListingLayout
+  icon={CameraIcon}
+  accents={[PartyIcon, CalendarIcon]}
+  backgroundImage={backgroundImage}
+  backgroundPosition="object-[40%_25%]"
+  title={atual.heading}
+  seoTitle={
+    label
+      ? `Cobertura de ${label.toLowerCase()} em Franca`
+      : 'Cobertura de eventos em Franca e região'
+  }
+  eyebrow={label ? 'Cobertura de eventos' : 'Eventos'}
+  description={
+    label
+      ? `Registros da Lú em eventos do tipo ${label.toLowerCase()} em Franca e região.`
+      : 'Eventos corporativos, premiações, inaugurações, lançamentos e encontros da comunidade registrados pela Lú.'
+  }
+  crumbs={crumbs}
+  filterable
+>
+  <FilterNav slot="filters" label="Filtrar eventos por tipo" items={filters} current={atual.href} />
+  <p data-filtro-status class="sr-only" aria-live="polite"></p>
+
+  <div data-filtro-lista hidden={visiveis === 0}>
+    <CardGrid>
+      {cards.map(({ filtro, card }) => (
+        <li data-filtro={filtro} hidden={!!tipo && filtro !== tipo}>
+          <CoverageCard item={card} />
+        </li>
+      ))}
+    </CardGrid>
+  </div>
+  <div
+    data-filtro-vazio
+    hidden={visiveis > 0}
+    class="bg-creme flex flex-col items-center gap-4 rounded-2xl p-10 text-center"
+  >
+    <span class="bg-laranja text-noite inline-flex size-16 items-center justify-center rounded-2xl">
+      <CameraIcon className="size-8" />
+    </span>
+    <p class="text-noite/80 max-w-md text-lg">
+      Ainda não há coberturas deste tipo. Volte em breve!
+    </p>
+  </div>
+
+  <Container slot="after" className="-mt-4 pb-20">
+    <div class="bg-creme flex flex-col items-start gap-4 rounded-2xl p-8 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-2xl">Vai ter evento?</h2>
+        <p class="text-noite/80 mt-1">Veja a agenda da cidade ou peça a cobertura do seu evento.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <ButtonLink href="/eventos/agenda" variant="outline">
+          Ver agenda
+        </ButtonLink>
+        <ButtonLink href="/para-marcas#orcamento" variant="accent">
+          Pedir cobertura
+        </ButtonLink>
+      </div>
+    </div>
+  </Container>
+</ListingLayout>

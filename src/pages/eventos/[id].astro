@@ -1,0 +1,118 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getEntries, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { Badge } from '@/components/ui/Badge';
+import { ButtonLink } from '@/components/ui/Button';
+import { Gallery } from '@/components/content/Gallery';
+import { YouTubeLite } from '@/components/content/YouTubeLite';
+import { getPublished } from '@/lib/content';
+import { paths } from '@/lib/cards';
+import { formatDay, isoDay } from '@/lib/dates';
+import { responsiveImage } from '@/lib/images';
+import { articleSchema } from '@/lib/seo';
+import { EVENT_TYPES } from '@/lib/taxonomy';
+
+export const getStaticPaths = (async () => {
+  const all = await getPublished('coberturas');
+  return all.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+
+const path = paths.cobertura(entry.id);
+const cover = await responsiveImage(data.cover, data.coverAlt, 'content');
+const gallery = await Promise.all(
+  data.gallery.map(async (g) => ({
+    thumb: await responsiveImage(g.src, g.alt, 'thumb'),
+    full: g.src.src,
+  })),
+);
+const brands = (await getEntries(data.brands)).filter((b) => !b.data.draft);
+---
+
+<ArticleLayout
+  title={data.title}
+  description={data.description}
+  cover={cover}
+  ogImage={cover.src}
+  publishedTime={data.date}
+  crumbs={[
+    { label: 'Início', href: '/' },
+    { label: 'Eventos', href: '/eventos' },
+    { label: data.title, href: path },
+  ]}
+  schema={[
+    articleSchema({
+      title: data.title,
+      description: data.description,
+      path,
+      date: data.date,
+      image: cover.src,
+    }),
+  ]}
+>
+  <div slot="eyebrow" class="mb-4">
+    <a href={`/eventos/tipo/${data.eventType}`} class="no-underline">
+      <Badge>{EVENT_TYPES[data.eventType]}</Badge>
+    </a>
+  </div>
+
+  <dl slot="meta" class="text-cinza grid gap-x-6 gap-y-1 sm:flex sm:flex-wrap">
+    <div>
+      <dt class="sr-only">Data</dt>
+      <dd>
+        <time datetime={isoDay(data.date)}>{formatDay(data.date)}</time>
+      </dd>
+    </div>
+    <div>
+      <dt class="sr-only">Local</dt>
+      <dd>
+        {data.location}, {data.city}
+      </dd>
+    </div>
+    {data.organizer && (
+      <div>
+        <dt class="inline">Realização: </dt>
+        <dd class="inline">{data.organizer}</dd>
+      </div>
+    )}
+  </dl>
+
+  <Content />
+
+  <div slot="after-content">
+    {data.youtubeId && <YouTubeLite client:visible id={data.youtubeId} title={data.title} />}
+    <Gallery images={gallery} />
+    {brands.length > 0 && (
+      <section aria-labelledby="marcas-evento" class="mt-12">
+        <h2 id="marcas-evento" class="mb-4 text-2xl">
+          Marcas presentes
+        </h2>
+        <ul class="flex flex-wrap gap-2">
+          {brands.map((b) => (
+            <li>
+              <a
+                href={paths.marca(b.id)}
+                class="bg-creme text-azul rounded-full px-4 py-2 font-semibold"
+              >
+                {b.data.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+    <div class="bg-azul text-branco mt-14 rounded-2xl p-8">
+      <p class="font-display text-2xl font-bold">Quer o seu evento contado assim?</p>
+      <p class="text-branco/90 mt-2">
+        Cobertura com fotos, vídeos curtos, entrevistas e divulgação nos canais da Lú.
+      </p>
+      <ButtonLink href="/para-marcas#orcamento" variant="accent" className="mt-5">
+        Pedir orçamento
+      </ButtonLink>
+    </div>
+  </div>
+</ArticleLayout>

@@ -1,0 +1,28 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { ButtonLink } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { Spotlight } from '@/components/ui/Spotlight';
+import { ChatIcon, MicIcon, SparkleIcon } from '@/components/ui/icons';
+---
+
+<BaseLayout
+  title="Página não encontrada"
+  description="Esta página não existe ou mudou de endereço."
+  noindex
+>
+  <Container size="text" className="py-24 text-center">
+    <Spotlight icon={MicIcon} accents={[ChatIcon, SparkleIcon]} className="mx-auto mb-6" />
+    <p class="font-display text-laranja-texto text-5xl font-bold">404</p>
+    <h1 class="mt-4 text-3xl sm:text-4xl">Essa história a Lú ainda não contou</h1>
+    <p class="text-cinza mt-4 text-lg">
+      A página que você procurou não existe ou mudou de endereço.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <ButtonLink href="/">Ir para o início</ButtonLink>
+      <ButtonLink href="/entrevistas" variant="outline">
+        Ver entrevistas
+      </ButtonLink>
+    </div>
+  </Container>
+</BaseLayout>

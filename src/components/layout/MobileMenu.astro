@@ -1,0 +1,99 @@
+---
+/**
+ * Menu do celular. Feito em Astro + script mínimo (≈1 KB) em vez de React,
+ * para que páginas de conteúdo não precisem carregar o React no celular.
+ */
+import { isActive, type NavItem } from '@/lib/navigation';
+
+interface Props {
+  items: NavItem[];
+  currentPath: string;
+}
+const { items, currentPath } = Astro.props;
+---
+
+<div class="lg:hidden" data-mobile-menu>
+  <button
+    type="button"
+    aria-expanded="false"
+    aria-controls="menu-mobile"
+    data-menu-toggle
+    class="text-azul flex size-11 items-center justify-center rounded-full"
+  >
+    <span class="sr-only" data-menu-label>
+      Abrir menu
+    </span>
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      class="size-7"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path data-icon-open d="M4 7h16M4 12h16M4 17h16"></path>
+      <path data-icon-close d="M6 6l12 12M18 6L6 18" class="hidden"></path>
+    </svg>
+  </button>
+
+  <div
+    id="menu-mobile"
+    hidden
+    class="bg-branco fixed inset-x-0 top-16 bottom-0 z-40 flex-col overflow-y-auto overscroll-contain px-4 pt-4 pb-10 [&:not([hidden])]:flex"
+  >
+    <nav aria-label="Menu principal">
+      <ul class="flex flex-col gap-1">
+        {items.map((item) => {
+          const active = isActive(currentPath, item.href);
+          return (
+            <li>
+              <a
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                class:list={[
+                  'font-display block rounded-xl px-4 py-3 text-lg font-semibold no-underline',
+                  item.highlight ? 'bg-laranja text-noite mt-3 text-center' : 'text-azul',
+                  active && !item.highlight && 'bg-creme',
+                ]}
+              >
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-mobile-menu]');
+  const button = root?.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const panel = root?.querySelector<HTMLElement>('#menu-mobile');
+
+  if (root && button && panel) {
+    const label = button.querySelector('[data-menu-label]');
+    const iconOpen = button.querySelector('[data-icon-open]');
+    const iconClose = button.querySelector('[data-icon-close]');
+
+    const setOpen = (open: boolean) => {
+      button.setAttribute('aria-expanded', String(open));
+      panel.hidden = !open;
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (label) label.textContent = open ? 'Fechar menu' : 'Abrir menu';
+      iconOpen?.classList.toggle('hidden', open);
+      iconClose?.classList.toggle('hidden', !open);
+      if (open) panel.querySelector<HTMLAnchorElement>('a')?.focus();
+    };
+
+    button.addEventListener('click', () =>
+      setOpen(button.getAttribute('aria-expanded') !== 'true'),
+    );
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !panel.hidden) {
+        setOpen(false);
+        button.focus();
+      }
+    });
+  }
+</script>

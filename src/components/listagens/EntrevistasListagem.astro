@@ -1,0 +1,107 @@
+---
+/**
+ * Listagem de entrevistas com filtro por categoria. Usada por /entrevistas e
+ * /entrevistas/categoria/[categoria]. Todas as páginas trazem todos os cards;
+ * os que não são da categoria vêm ocultos, e o FilterScript troca sem recarregar.
+ */
+import ListingLayout from '@/layouts/ListingLayout.astro';
+import { CardGrid } from '@/components/content/Card';
+import { FilterNav, type FilterItem } from '@/components/content/FilterNav';
+import { InterviewCard } from '@/components/content/InterviewCard';
+import { ChatIcon, MicIcon, PeopleIcon } from '@/components/ui/icons';
+import { getPublished } from '@/lib/content';
+import { toInterviewCard } from '@/lib/cards';
+import { responsiveImage } from '@/lib/images';
+import { SITE } from '@/lib/site';
+import { INTERVIEW_CATEGORIES, type InterviewCategory } from '@/lib/taxonomy';
+import fundo from '@/assets/fundos/entrevistas-microfones.jpg';
+
+interface Props {
+  categoria?: InterviewCategory | undefined;
+}
+const { categoria } = Astro.props;
+
+const entries = await getPublished('entrevistas');
+const cards = await Promise.all(
+  entries.map(async (e) => ({ filtro: e.data.category, card: await toInterviewCard(e) })),
+);
+const visiveis = cards.filter((c) => !categoria || c.filtro === categoria).length;
+
+const doc = (t: string) => `${t} | ${SITE.name}`;
+const filters: FilterItem[] = [
+  {
+    label: 'Todas',
+    href: '/entrevistas',
+    value: '',
+    heading: 'Entrevistas',
+    docTitle: doc('Entrevistas'),
+  },
+  ...(Object.entries(INTERVIEW_CATEGORIES) as [InterviewCategory, string][]).map(
+    ([slug, label]) => ({
+      label,
+      href: `/entrevistas/categoria/${slug}`,
+      value: slug,
+      heading: `Entrevistas: ${label}`,
+      docTitle: doc(`Entrevistas com ${label.toLowerCase()} em Franca`),
+    }),
+  ),
+];
+const atual = filters.find((f) => f.value === (categoria ?? ''))!;
+
+const label = categoria ? INTERVIEW_CATEGORIES[categoria] : undefined;
+const crumbs = [
+  { label: 'Início', href: '/' },
+  { label: 'Entrevistas', href: '/entrevistas' },
+  ...(label ? [{ label, href: atual.href }] : []),
+];
+
+// Foto de fundo do topo. Para voltar ao desenho de ícones, remova backgroundImage abaixo.
+const backgroundImage = await responsiveImage(fundo, '', 'hero');
+---
+
+<ListingLayout
+  icon={MicIcon}
+  accents={[ChatIcon, PeopleIcon]}
+  backgroundImage={backgroundImage}
+  backgroundPosition="object-[55%_85%]"
+  title={atual.heading}
+  seoTitle={label ? `Entrevistas com ${label.toLowerCase()} em Franca` : 'Entrevistas'}
+  eyebrow={label ? 'Entrevistas' : 'A Lú te conta'}
+  description={
+    label
+      ? `Conversas da Lú com ${label.toLowerCase()} de Franca e região.`
+      : 'Conversas com empreendedores, empresas, artistas, profissionais autônomos e personalidades de Franca e região.'
+  }
+  crumbs={crumbs}
+  filterable
+>
+  <FilterNav
+    slot="filters"
+    label="Filtrar entrevistas por categoria"
+    items={filters}
+    current={atual.href}
+  />
+  <p data-filtro-status class="sr-only" aria-live="polite"></p>
+
+  <div data-filtro-lista hidden={visiveis === 0}>
+    <CardGrid>
+      {cards.map(({ filtro, card }) => (
+        <li data-filtro={filtro} hidden={!!categoria && filtro !== categoria}>
+          <InterviewCard item={card} />
+        </li>
+      ))}
+    </CardGrid>
+  </div>
+  <div
+    data-filtro-vazio
+    hidden={visiveis > 0}
+    class="bg-creme flex flex-col items-center gap-4 rounded-2xl p-10 text-center"
+  >
+    <span class="bg-laranja text-noite inline-flex size-16 items-center justify-center rounded-2xl">
+      <MicIcon className="size-8" />
+    </span>
+    <p class="text-noite/80 max-w-md text-lg">
+      Ainda não há entrevistas nesta categoria. Volte em breve!
+    </p>
+  </div>
+</ListingLayout>

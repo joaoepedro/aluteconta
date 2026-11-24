@@ -1,0 +1,28 @@
+# build
+dist/
+.astro/
+.wrangler/
+
+# tipos gerados pelo wrangler (npm run cf-typegen)
+worker-configuration.d.ts
+
+# dependências
+node_modules/
+
+# segredos locais
+.env
+.env.*
+!.env.example
+.dev.vars
+!.dev.vars.example
+
+# testes
+playwright-report/
+test-results/
+.lighthouseci/
+coverage/
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log

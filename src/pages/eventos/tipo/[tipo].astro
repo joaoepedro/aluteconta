@@ -1,0 +1,12 @@
+---
+import type { GetStaticPaths } from 'astro';
+import EventosListagem from '@/components/listagens/EventosListagem.astro';
+import { EVENT_TYPES, type EventType } from '@/lib/taxonomy';
+
+export const getStaticPaths = (() =>
+  Object.keys(EVENT_TYPES).map((tipo) => ({ params: { tipo } }))) satisfies GetStaticPaths;
+
+const tipo = Astro.params.tipo as EventType;
+---
+
+<EventosListagem tipo={tipo} />

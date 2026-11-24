@@ -1,0 +1,111 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { Img } from '@/components/ui/Img';
+import { ButtonLink } from '@/components/ui/Button';
+import { getBrands, getPublished } from '@/lib/content';
+import { paths } from '@/lib/cards';
+import { responsiveImage } from '@/lib/images';
+
+export const getStaticPaths = (async () => {
+  const all = await getBrands();
+  return all.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+
+const path = paths.marca(entry.id);
+const logo = await responsiveImage(data.logo, data.logoAlt, 'logo');
+const cover = data.cover
+  ? await responsiveImage(data.cover, data.coverAlt ?? data.name, 'content')
+  : undefined;
+
+// Onde a marca apareceu: coberturas que a citam e edições do Café Conexão
+const coverage = (await getPublished('coberturas')).filter((c) =>
+  c.data.brands.some((b) => b.id === entry.id),
+);
+const editions = (await getPublished('edicoes')).filter((e) =>
+  e.data.participants.some((p) => p.brand?.id === entry.id),
+);
+const appearances = [
+  ...coverage.map((c) => ({ label: c.data.title, href: paths.cobertura(c.id) })),
+  ...editions.map((e) => ({ label: e.data.title, href: paths.edicao(e.id) })),
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: data.name,
+  description: data.description,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: data.city,
+    addressRegion: 'SP',
+    addressCountry: 'BR',
+  },
+  ...(data.site ? { url: data.site } : {}),
+  sameAs: [data.instagram, data.site].filter(Boolean),
+};
+---
+
+<ArticleLayout
+  title={data.name}
+  description={data.description}
+  cover={cover}
+  ogImage={cover?.src ?? logo.src}
+  crumbs={[
+    { label: 'Início', href: '/' },
+    { label: 'Para Marcas', href: '/para-marcas' },
+    { label: data.name, href: path },
+  ]}
+  schema={[schema]}
+>
+  <div slot="eyebrow" class="mb-5 flex items-center gap-4">
+    <div class="bg-branco size-20 overflow-hidden rounded-xl">
+      <Img image={logo} className="object-contain p-2" priority />
+    </div>
+    <p class="text-laranja-texto text-sm font-semibold tracking-wide uppercase">
+      {data.segment} · {data.city}
+    </p>
+  </div>
+
+  <div slot="meta" class="flex flex-wrap gap-3">
+    {data.site && (
+      <ButtonLink href={data.site} variant="outline">
+        Site
+      </ButtonLink>
+    )}
+    {data.instagram && (
+      <ButtonLink href={data.instagram} variant="outline">
+        Instagram
+      </ButtonLink>
+    )}
+    {data.whatsapp && (
+      <ButtonLink href={`https://wa.me/${data.whatsapp}`} variant="accent">
+        WhatsApp
+      </ButtonLink>
+    )}
+  </div>
+
+  <Content />
+
+  {appearances.length > 0 && (
+    <section slot="after-content" aria-labelledby="onde-apareceu" class="mt-12">
+      <h2 id="onde-apareceu" class="mb-4 text-2xl">
+        Na A Lú Te Conta!
+      </h2>
+      <ul class="list-disc space-y-1 pl-5">
+        {appearances.map((a) => (
+          <li>
+            <a href={a.href} class="text-azul underline">
+              {a.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</ArticleLayout>

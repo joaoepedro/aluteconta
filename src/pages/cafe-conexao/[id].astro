@@ -1,0 +1,165 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getEntry, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { Badge } from '@/components/ui/Badge';
+import { ButtonLink } from '@/components/ui/Button';
+import { Gallery } from '@/components/content/Gallery';
+import { GuestList, ParticipantList, type Participant } from '@/components/content/PeopleList';
+import { YouTubeLite } from '@/components/content/YouTubeLite';
+import { CafeConexaoForm } from '@/components/forms/CafeConexaoForm';
+import { getPublished } from '@/lib/content';
+import { paths } from '@/lib/cards';
+import { formatDay, isUpcoming, isoDay } from '@/lib/dates';
+import { responsiveImage } from '@/lib/images';
+import { eventSchema } from '@/lib/seo';
+import { googleCalendarUrl } from '@/lib/calendar';
+import { PARTICIPANT_ROLES, PARTICIPANT_ROLES_PLURAL, type ParticipantRole } from '@/lib/taxonomy';
+
+export const getStaticPaths = (async () => {
+  const all = await getPublished('edicoes');
+  return all.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+
+const path = paths.edicao(entry.id);
+const upcoming = isUpcoming(data.date, data.endTime);
+const cover = await responsiveImage(data.cover, data.coverAlt, 'content');
+const gallery = await Promise.all(
+  data.gallery.map(async (g) => ({
+    thumb: await responsiveImage(g.src, g.alt, 'thumb'),
+    full: g.src.src,
+  })),
+);
+const guests = await Promise.all(
+  data.guests.map(async (g) => ({
+    name: g.name,
+    role: g.role,
+    topic: g.topic,
+    url: g.url,
+    photo: g.photo ? await responsiveImage(g.photo, g.name, 'thumb') : undefined,
+  })),
+);
+
+const participants: Participant[] = await Promise.all(
+  data.participants.map(async (p) => {
+    const brand = p.brand ? await getEntry(p.brand) : undefined;
+    return {
+      name: p.name,
+      roleLabel: PARTICIPANT_ROLES[p.role],
+      href: brand && !brand.data.draft ? paths.marca(brand.id) : undefined,
+      instagram: p.instagram,
+      whatsapp: p.whatsapp,
+    };
+  }),
+);
+const groups = (Object.keys(PARTICIPANT_ROLES) as ParticipantRole[]).map((role) => ({
+  label: PARTICIPANT_ROLES_PLURAL[role],
+  items: participants.filter((p) => p.roleLabel === PARTICIPANT_ROLES[role]),
+}));
+
+const place = [data.location, data.address, data.city].filter(Boolean).join(', ');
+const timeLabel = data.time
+  ? data.endTime
+    ? `das ${data.time} às ${data.endTime}`
+    : `às ${data.time}`
+  : '';
+const calendarUrl = googleCalendarUrl({
+  title: data.title,
+  description: data.description,
+  location: place,
+  date: data.date,
+  time: data.time,
+  endTime: data.endTime,
+});
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+---
+
+<ArticleLayout
+  title={data.title}
+  description={data.description}
+  cover={cover}
+  ogImage={cover.src}
+  crumbs={[
+    { label: 'Início', href: '/' },
+    { label: 'Café Conexão', href: '/cafe-conexao' },
+    { label: data.theme, href: path },
+  ]}
+  schema={[
+    eventSchema({
+      name: data.title,
+      description: data.description,
+      path,
+      date: data.date,
+      time: data.time,
+      endTime: data.endTime,
+      location: data.location,
+      address: data.address,
+      city: data.city,
+      image: cover.src,
+      registrationUrl: data.registrationUrl,
+    }),
+  ]}
+>
+  <div slot="eyebrow" class="mb-4 flex flex-wrap gap-2">
+    <Badge tone="laranja">{upcoming ? 'Próxima edição' : 'Edição realizada'}</Badge>
+    {data.edition && <Badge tone="creme">{data.edition}ª edição</Badge>}
+  </div>
+
+  <div slot="meta" class="text-noite">
+    <p>
+      <strong>
+        <time datetime={isoDay(data.date)}>{formatDay(data.date)}</time>
+      </strong>
+      {timeLabel && <span> {timeLabel}</span>}
+    </p>
+    <p class="text-cinza">{place}</p>
+    {data.price && <p class="text-cinza">{data.price}</p>}
+    {upcoming && (
+      <div class="mt-5 flex flex-wrap gap-3">
+        <ButtonLink href={data.registrationUrl ?? '#participar'} variant="accent">
+          Quero participar
+        </ButtonLink>
+        <ButtonLink href={calendarUrl} variant="outline">
+          Salvar na agenda
+        </ButtonLink>
+      </div>
+    )}
+  </div>
+
+  {data.program.length > 0 && (
+    <section slot="before-content" aria-labelledby="programacao" class="mb-10">
+      <h2 id="programacao" class="mb-4 text-2xl">
+        Programação
+      </h2>
+      <ol class="border-borda divide-borda divide-y rounded-2xl border">
+        {data.program.map((item) => (
+          <li class="flex gap-4 px-5 py-3">
+            <span class="text-azul w-14 shrink-0 font-bold">{item.time}</span>
+            <span>{item.activity}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )}
+
+  <Content />
+
+  <div slot="after-content">
+    <GuestList people={guests} />
+    <ParticipantList groups={groups} />
+    {data.youtubeId && <YouTubeLite client:visible id={data.youtubeId} title={data.title} />}
+    <Gallery images={gallery} title="Fotos da edição" />
+    {upcoming && !data.registrationUrl && (
+      <section id="participar" aria-labelledby="participar-titulo" class="mt-14">
+        <h2 id="participar-titulo" class="mb-6 text-2xl">
+          Quero participar
+        </h2>
+        <CafeConexaoForm client:visible turnstileSiteKey={turnstileSiteKey} edition={data.title} />
+      </section>
+    )}
+  </div>
+</ArticleLayout>

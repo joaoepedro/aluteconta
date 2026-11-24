@@ -1,0 +1,91 @@
+---
+/**
+ * Troca de filtro sem recarregar a página (melhoria progressiva).
+ * Sem JavaScript, os filtros continuam funcionando como links normais.
+ *
+ * Marcações esperadas na página:
+ *   [data-filtro-nav]            nav com links a[data-filtro-valor]
+ *   [data-filtro-lista]          container dos cards; cada item com data-filtro="<valor>"
+ *   [data-filtro-vazio]          mensagem para filtro sem itens (opcional)
+ *   [data-filtro-titulo-wrap] h1 H1 que muda conforme o filtro (opcional)
+ *   [data-filtro-status]         região aria-live para leitores de tela (opcional)
+ */
+---
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-filtro-nav]');
+  const lista = document.querySelector<HTMLElement>('[data-filtro-lista]');
+
+  if (nav && lista) {
+    const vazio = document.querySelector<HTMLElement>('[data-filtro-vazio]');
+    const titulo = document.querySelector<HTMLElement>('[data-filtro-titulo-wrap] h1');
+    const status = document.querySelector<HTMLElement>('[data-filtro-status]');
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>('a[data-filtro-valor]')];
+    const itens = [...lista.querySelectorAll<HTMLElement>('[data-filtro]')];
+    const reduzMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const aplicar = (link: HTMLAnchorElement) => {
+      const valor = link.dataset['filtroValor'] ?? '';
+
+      const atualizar = () => {
+        let visiveis = 0;
+        for (const item of itens) {
+          const mostra = !valor || item.dataset['filtro'] === valor;
+          item.hidden = !mostra;
+          if (mostra) visiveis++;
+        }
+        lista.hidden = visiveis === 0;
+        if (vazio) vazio.hidden = visiveis > 0;
+
+        for (const l of links) {
+          if (l === link) l.setAttribute('aria-current', 'page');
+          else l.removeAttribute('aria-current');
+        }
+        if (titulo && link.dataset['filtroTitulo'])
+          titulo.textContent = link.dataset['filtroTitulo'];
+        if (link.dataset['filtroDocTitulo']) document.title = link.dataset['filtroDocTitulo'];
+        if (status) {
+          status.textContent =
+            visiveis === 0
+              ? 'Nenhum resultado neste filtro.'
+              : `${visiveis} ${visiveis === 1 ? 'resultado' : 'resultados'}.`;
+        }
+      };
+
+      // Transição suave (cross-fade) onde o navegador suporta
+      const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+      if (!reduzMovimento && typeof doc.startViewTransition === 'function')
+        doc.startViewTransition(atualizar);
+      else atualizar();
+
+      // Mantém o filtro escolhido visível na barra (celular)
+      link.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+        behavior: reduzMovimento ? 'auto' : 'smooth',
+      });
+    };
+
+    nav.addEventListener('click', (event) => {
+      const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[data-filtro-valor]');
+      if (
+        !link ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      event.preventDefault();
+      if (link.getAttribute('aria-current') === 'page') return;
+      history.pushState({ filtro: link.href }, '', link.href);
+      aplicar(link);
+    });
+
+    window.addEventListener('popstate', () => {
+      const link = links.find((l) => new URL(l.href).pathname === location.pathname);
+      if (link) aplicar(link);
+    });
+  }
+</script>

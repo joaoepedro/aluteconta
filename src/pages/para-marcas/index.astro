@@ -1,0 +1,99 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Breadcrumbs } from '@/components/content/Breadcrumbs';
+import { BrandCard } from '@/components/content/BrandCard';
+import { CardGrid } from '@/components/content/Card';
+import { PricingTable } from '@/components/content/PricingTable';
+import { QuoteForm } from '@/components/forms/QuoteForm';
+import { Container } from '@/components/ui/Container';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { Spotlight } from '@/components/ui/Spotlight';
+import {
+  BriefcaseIcon,
+  CameraIcon,
+  MegaphoneIcon,
+  MicIcon,
+  SparkleIcon,
+} from '@/components/ui/icons';
+import { getBrands } from '@/lib/content';
+import { mapAll, toBrandCard } from '@/lib/cards';
+import { breadcrumbSchema } from '@/lib/seo';
+import { SITE } from '@/lib/site';
+
+const brands = await mapAll(await getBrands(), toBrandCard);
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+
+const crumbs = [
+  { label: 'Início', href: '/' },
+  { label: 'Para Marcas', href: '/para-marcas' },
+];
+---
+
+<BaseLayout
+  title="Cobertura de eventos e divulgação de marcas em Franca"
+  description="Pacotes de cobertura para eventos corporativos, confraternizações e workshops, entrevistas e divulgação de marcas nos canais A Lú Te Conta!."
+  schema={[breadcrumbSchema(crumbs)]}
+>
+  <section class="bg-creme relative overflow-hidden pt-8 pb-10 sm:pt-12">
+    <Container className="flex items-center justify-between gap-10">
+      <div class="min-w-0">
+        <Breadcrumbs items={crumbs} />
+        <SectionHeading
+          level="h1"
+          eyebrow="Para marcas e eventos"
+          icon={MegaphoneIcon}
+          className="mb-0"
+          title="Comunicação e conteúdo para o seu evento e a sua marca"
+          description="Fotos, vídeos curtos, entrevistas e divulgação nos canais da Lú para empresas, profissionais e organizadores de eventos de Franca e região."
+        />
+      </div>
+      <Spotlight icon={MegaphoneIcon} accents={[CameraIcon, MicIcon]} className="hidden lg:block" />
+    </Container>
+  </section>
+
+  <section aria-labelledby="pacotes" class="py-14">
+    <Container>
+      <SectionHeading
+        id="pacotes"
+        eyebrow="Serviços"
+        icon={BriefcaseIcon}
+        title="Pacotes de cobertura"
+      />
+      <PricingTable showPrices={SITE.showPrices} />
+    </Container>
+  </section>
+
+  {brands.length > 0 && (
+    <section aria-labelledby="marcas-destaque" class="bg-creme py-14">
+      <Container>
+        <SectionHeading
+          id="marcas-destaque"
+          eyebrow="Vitrine"
+          icon={SparkleIcon}
+          title="Marcas em destaque"
+          description="Empresas, produtos e profissionais que já passaram pelos eventos e conteúdos da A Lú Te Conta!."
+        />
+        <CardGrid columns={4}>
+          {brands.map((item) => (
+            <li>
+              <BrandCard item={item} />
+            </li>
+          ))}
+        </CardGrid>
+      </Container>
+    </section>
+  )}
+
+  <section id="orcamento" aria-labelledby="orcamento-titulo" class="py-16">
+    <Container size="text">
+      <SectionHeading
+        id="orcamento-titulo"
+        eyebrow="Orçamento"
+        icon={MegaphoneIcon}
+        title="Conte sobre o seu evento"
+        description="Responda em menos de 2 minutos. A Lú retorna com a proposta pelo WhatsApp ou e-mail."
+      />
+      <QuoteForm client:visible turnstileSiteKey={turnstileSiteKey} />
+    </Container>
+  </section>
+</BaseLayout>

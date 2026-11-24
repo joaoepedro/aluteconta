@@ -1,0 +1,4 @@
+# Copie para .dev.vars para testar os formulários localmente.
+# Em produção, cadastre com: npx wrangler secret put NOME
+RESEND_API_KEY=
+TURNSTILE_SECRET_KEY=

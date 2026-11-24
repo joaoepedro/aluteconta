@@ -1,0 +1,235 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Breadcrumbs } from '@/components/content/Breadcrumbs';
+import { CardGrid } from '@/components/content/Card';
+import { EditionCard } from '@/components/content/EditionCard';
+import { CafeConexaoForm } from '@/components/forms/CafeConexaoForm';
+import { ButtonLink } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { CoffeeCup } from '@/components/ui/CoffeeCup';
+import { IconBadge } from '@/components/ui/IconBadge';
+import {
+  CalendarIcon,
+  ChatIcon,
+  HandsIcon,
+  HeartIcon,
+  LeafIcon,
+  PeopleIcon,
+  SparkleIcon,
+} from '@/components/ui/icons';
+import { getPastEditions, getUpcomingEditions } from '@/lib/content';
+import { mapAll, toEditionCard } from '@/lib/cards';
+import { breadcrumbSchema } from '@/lib/seo';
+import { Img } from '@/components/ui/Img';
+import { responsiveImage } from '@/lib/images';
+import fundo from '@/assets/fundos/cafe-conexao-coado.jpg';
+
+const upcoming = await mapAll(await getUpcomingEditions(), (e) => toEditionCard(e));
+const past = await mapAll(await getPastEditions(), (e) => toEditionCard(e));
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+
+// Foto de fundo do topo (banner inteiro, com opacidade reduzida).
+// Para voltar à xícara animada com ícones no lugar da foto, use: const usarFoto = false;
+const usarFoto = true;
+const fotoFundo = await responsiveImage(fundo, '', 'hero');
+
+const crumbs = [
+  { label: 'Início', href: '/' },
+  { label: 'Café Conexão', href: '/cafe-conexao' },
+];
+
+const pillars = [
+  {
+    icon: ChatIcon,
+    title: 'Comportamento',
+    text: 'Relações, comunicação e desenvolvimento pessoal no dia a dia.',
+  },
+  {
+    icon: HeartIcon,
+    title: 'Saúde e bem-estar',
+    text: 'Informação de qualidade com profissionais da área, sem complicação.',
+  },
+  {
+    icon: LeafIcon,
+    title: 'Qualidade de vida',
+    text: 'Práticas simples para equilibrar trabalho, família e autocuidado.',
+  },
+];
+
+const steps = [
+  {
+    icon: null,
+    title: 'Acolhimento e café',
+    text: 'Chegada, café e tempo para conhecer quem está ao lado.',
+  },
+  {
+    icon: PeopleIcon,
+    title: 'Roda de conversa',
+    text: 'Convidados especialistas abrem a conversa sobre o tema da sua área.',
+  },
+  {
+    icon: HandsIcon,
+    title: 'Oficinas práticas',
+    text: 'Atividades para levar para casa o que foi conversado.',
+  },
+];
+---
+
+<BaseLayout
+  title="Café Conexão"
+  description="Encontros com rodas de conversa e oficinas sobre comportamento, saúde, bem-estar e qualidade de vida para a comunidade, empreendedores e profissionais de Franca."
+  schema={[breadcrumbSchema(crumbs)]}
+>
+  <section class="bg-creme relative overflow-hidden pt-8 pb-14 sm:pt-12 lg:pb-20">
+    {usarFoto ? (
+      <div aria-hidden="true" class="absolute inset-0 opacity-30 lg:opacity-40">
+        <Img image={fotoFundo} priority className="object-[70%_50%]" />
+      </div>
+    ) : (
+      <div
+        aria-hidden="true"
+        class="bg-laranja/10 absolute -top-24 -right-24 size-96 rounded-full"
+      />
+    )}
+    <Container className="relative grid items-center gap-10 lg:grid-cols-[1.4fr_1fr]">
+      <div>
+        <Breadcrumbs items={crumbs} />
+        <p class="text-laranja-texto text-sm font-semibold tracking-wide uppercase">
+          Um projeto A Lú Te Conta!
+        </p>
+        <h1 class="mt-2 text-4xl sm:text-6xl">Café Conexão</h1>
+        <p class="text-noite/80 mt-5 max-w-3xl text-lg sm:text-xl">
+          Um encontro que reúne a comunidade, empreendedores, empresários e profissionais liberais.
+          Convidados especiais abrem uma roda de conversa sobre o tema da sua especialidade e, no
+          fim, atividades práticas e oficinas fecham o que foi conversado.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <ButtonLink href="#participar" variant="accent" size="lg">
+            Quero participar
+          </ButtonLink>
+          <ButtonLink href="#edicoes" variant="outline" size="lg">
+            Ver edições
+          </ButtonLink>
+        </div>
+      </div>
+      {!usarFoto && (
+        <div aria-hidden="true" class="relative mx-auto hidden size-72 lg:block">
+          <div class="bg-branco absolute inset-6 rounded-full shadow-xl"></div>
+          <div class="border-laranja/60 absolute inset-0 rounded-full border-2 border-dashed"></div>
+          <CoffeeCup className="absolute inset-0 m-auto w-48" />
+          <IconBadge
+            icon={ChatIcon}
+            tone="azul"
+            size="md"
+            animated
+            className="bg-branco absolute top-6 -left-2 shadow-lg"
+          />
+          <IconBadge
+            icon={HeartIcon}
+            tone="laranja"
+            size="md"
+            className="animate-flutuar-lento absolute right-0 bottom-10 shadow-lg [animation-delay:1.2s]"
+          />
+          <SparkleIcon className="text-laranja animate-brilhar absolute top-2 right-10 size-7" />
+        </div>
+      )}
+      {!usarFoto && <CoffeeCup className="mx-auto w-32 lg:hidden" />}
+    </Container>
+  </section>
+
+  <section aria-labelledby="eixos" class="py-16">
+    <Container>
+      <SectionHeading
+        id="eixos"
+        eyebrow="Os temas"
+        icon={SparkleIcon}
+        title="Três eixos de conversa"
+      />
+      <ul class="grid gap-6 md:grid-cols-3">
+        {pillars.map((p) => (
+          <li class="border-borda hover:border-laranja group rounded-2xl border-2 p-6 transition-colors">
+            <IconBadge
+              icon={p.icon}
+              size="md"
+              className="transition-transform group-hover:-rotate-6"
+            />
+            <h3 class="mt-4 text-xl">{p.title}</h3>
+            <p class="text-noite/80 mt-2">{p.text}</p>
+          </li>
+        ))}
+      </ul>
+
+      <h2 class="mt-16 mb-6 text-2xl sm:text-3xl">Como funciona cada edição</h2>
+      <ol class="grid gap-6 md:grid-cols-3">
+        {steps.map((s, i) => (
+          <li class="bg-creme relative rounded-2xl p-6">
+            <span class="bg-azul text-branco font-display absolute top-5 right-5 flex size-8 items-center justify-center rounded-full text-sm font-bold">
+              {i + 1}
+            </span>
+            {s.icon ? (
+              <IconBadge icon={s.icon} tone="laranja" size="lg" />
+            ) : (
+              <span
+                aria-hidden="true"
+                class="bg-branco flex size-16 items-center justify-center rounded-2xl"
+              >
+                <CoffeeCup className="w-12" />
+              </span>
+            )}
+            <h3 class="mt-4 text-xl">{s.title}</h3>
+            <p class="text-noite/80 mt-2">{s.text}</p>
+          </li>
+        ))}
+      </ol>
+    </Container>
+  </section>
+
+  <section id="edicoes" aria-labelledby="edicoes-titulo" class="bg-creme py-16">
+    <Container>
+      <SectionHeading
+        id="edicoes-titulo"
+        eyebrow="Edições"
+        icon={CalendarIcon}
+        title={upcoming.length ? 'Próximas edições' : 'Edições'}
+      />
+      {upcoming.length > 0 && (
+        <CardGrid>
+          {upcoming.map((item) => (
+            <li>
+              <EditionCard item={item} />
+            </li>
+          ))}
+        </CardGrid>
+      )}
+      {past.length > 0 && (
+        <>
+          <h3 class="mt-14 mb-6 text-2xl">Edições realizadas</h3>
+          <CardGrid>
+            {past.map((item) => (
+              <li>
+                <EditionCard item={item} />
+              </li>
+            ))}
+          </CardGrid>
+        </>
+      )}
+      {upcoming.length === 0 && past.length === 0 && (
+        <p class="text-cinza text-lg">A primeira edição será anunciada em breve.</p>
+      )}
+    </Container>
+  </section>
+
+  <section id="participar" aria-labelledby="participar-titulo" class="py-16">
+    <Container size="text">
+      <SectionHeading
+        id="participar-titulo"
+        eyebrow="Faça parte"
+        icon={HandsIcon}
+        title="Participe, exponha, fale ou apoie"
+        description="Participantes, expositores, convidados e patrocinadores ganham espaço e visibilidade na página de cada edição."
+      />
+      <CafeConexaoForm client:visible turnstileSiteKey={turnstileSiteKey} />
+    </Container>
+  </section>
+</BaseLayout>

@@ -1,0 +1,123 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { Badge } from '@/components/ui/Badge';
+import { YouTubeLite } from '@/components/content/YouTubeLite';
+import { CardGrid } from '@/components/content/Card';
+import { InterviewCard } from '@/components/content/InterviewCard';
+import { Container } from '@/components/ui/Container';
+import { getPublished } from '@/lib/content';
+import { mapAll, paths, toInterviewCard } from '@/lib/cards';
+import { formatDay, isoDay } from '@/lib/dates';
+import { responsiveImage } from '@/lib/images';
+import { articleSchema } from '@/lib/seo';
+import { INTERVIEW_CATEGORIES } from '@/lib/taxonomy';
+
+export const getStaticPaths = (async () => {
+  const all = await getPublished('entrevistas');
+  return all.map((entry) => ({ params: { id: entry.id }, props: { entry, all } }));
+}) satisfies GetStaticPaths;
+
+const { entry, all } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+
+const path = paths.entrevista(entry.id);
+const cover = await responsiveImage(data.cover, data.coverAlt, 'content');
+const related = await mapAll(
+  all.filter((e) => e.id !== entry.id && e.data.category === data.category).slice(0, 3),
+  toInterviewCard,
+);
+const category = INTERVIEW_CATEGORIES[data.category];
+---
+
+<ArticleLayout
+  title={data.title}
+  description={data.description}
+  cover={cover}
+  ogImage={cover.src}
+  publishedTime={data.date}
+  crumbs={[
+    { label: 'Início', href: '/' },
+    { label: 'Entrevistas', href: '/entrevistas' },
+    { label: data.interviewee.name, href: path },
+  ]}
+  schema={[
+    articleSchema({
+      title: data.title,
+      description: data.description,
+      path,
+      date: data.date,
+      image: cover.src,
+    }),
+  ]}
+>
+  <div slot="eyebrow" class="mb-4 flex flex-wrap gap-2">
+    <a href={`/entrevistas/categoria/${data.category}`} class="no-underline">
+      <Badge>{category}</Badge>
+    </a>
+    {data.series && <Badge tone="laranja">{data.series}</Badge>}
+  </div>
+
+  <div slot="meta" class="text-cinza flex flex-wrap gap-x-4 gap-y-1">
+    <span>
+      <strong class="text-noite">{data.interviewee.name}</strong> ·{' '}
+      {[data.interviewee.role, data.interviewee.company, data.interviewee.city]
+        .filter(Boolean)
+        .join(' · ')}
+    </span>
+    <time datetime={isoDay(data.date)}>{formatDay(data.date)}</time>
+  </div>
+
+  {data.quote && (
+    <blockquote
+      slot="before-content"
+      class="border-laranja font-display text-azul mb-10 border-l-4 pl-5 text-2xl font-semibold"
+    >
+      “{data.quote}”
+    </blockquote>
+  )}
+
+  <Content />
+
+  <div slot="after-content">
+    {data.youtubeId && <YouTubeLite client:visible id={data.youtubeId} title={data.title} />}
+    {data.interviewee.links.length > 0 && (
+      <div class="bg-creme mt-10 rounded-2xl p-6">
+        <p class="font-display text-azul font-bold">Conheça mais sobre {data.interviewee.name}</p>
+        <ul class="mt-2 flex flex-wrap gap-4">
+          {data.interviewee.links.map((l) => (
+            <li>
+              <a
+                href={l.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-azul font-semibold underline"
+              >
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+
+  {related.length > 0 && (
+    <section slot="related" aria-labelledby="relacionadas" class="mt-20">
+      <Container>
+        <h2 id="relacionadas" class="mb-6 text-2xl">
+          Mais entrevistas: {category}
+        </h2>
+        <CardGrid>
+          {related.map((item) => (
+            <li>
+              <InterviewCard item={item} />
+            </li>
+          ))}
+        </CardGrid>
+      </Container>
+    </section>
+  )}
+</ArticleLayout>

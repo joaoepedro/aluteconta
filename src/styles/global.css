@@ -1,0 +1,269 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/montserrat/wght.css';
+
+/*
+ * Tokens da marca A Lú Te Conta!
+ * Contrastes (WCAG): noite/branco 17,4 · branco/azul 10,7 · noite/laranja 5,9
+ * · branco/laranja-texto 5,1. Branco sobre laranja (2,9) NÃO passa para texto.
+ */
+@theme {
+  --color-azul: #02388e;
+  --color-azul-escuro: #022a6b;
+  --color-brilho: #0090c8;
+  --color-laranja: #f47001;
+  --color-laranja-texto: #b84d00;
+  --color-noite: #0b1a33;
+  --color-creme: #fff6ec;
+  --color-branco: #ffffff;
+  --color-cinza: #5b6475;
+  --color-borda: #e4e1dc;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Montserrat Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1rem;
+
+  --animate-flutuar: flutuar 6s ease-in-out infinite;
+  --animate-flutuar-lento: flutuar 9s ease-in-out infinite;
+  --animate-brilhar: brilhar 3s ease-in-out infinite;
+
+  @keyframes flutuar {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-10px) rotate(-3deg);
+    }
+  }
+  @keyframes brilhar {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+}
+
+@layer base {
+  html {
+    @apply bg-branco text-noite antialiased;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    @apply font-sans text-base leading-relaxed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-azul font-bold tracking-tight text-balance;
+  }
+
+  a {
+    @apply underline-offset-4;
+  }
+
+  :focus-visible {
+    @apply outline-laranja-texto rounded-sm outline-3 outline-offset-2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Esmaecido na borda direita: indica que a linha continua (rolagem lateral) */
+@utility fade-end {
+  mask-image: linear-gradient(to right, #000 85%, transparent);
+}
+
+/*
+ * Vapor da xícara do Café Conexão (formas animadas via SMIL no componente).
+ * Aqui: fluxo subindo pelo fio (tracejado em movimento, suavizado pelo desfoque)
+ * e uma "respiração" leve de opacidade.
+ */
+.xicara-vapor-corpo,
+.xicara-vapor-brilho {
+  stroke-dasharray: 280 45;
+  animation: xicara-fluxo 2.6s linear infinite;
+}
+.xicara-vapor-corpo {
+  opacity: 0.75;
+}
+.xicara-vapor-brilho {
+  opacity: 0.55;
+}
+.xicara-vapor {
+  animation: xicara-respira 5s ease-in-out infinite;
+}
+
+@keyframes xicara-fluxo {
+  to {
+    stroke-dashoffset: -325;
+  }
+}
+@keyframes xicara-respira {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.xicara-vapor-estatico {
+  display: none;
+}
+
+/* Reduzir movimento: troca o vapor animado pela versão parada */
+@media (prefers-reduced-motion: reduce) {
+  .xicara-vapor {
+    display: none;
+  }
+  .xicara-vapor-estatico {
+    display: inline;
+  }
+}
+
+/*
+ * Campos de lista (select). Todos os navegadores: seta própria e mesmo visual
+ * dos outros campos. Chrome/Edge 135+: a lista aberta também é estilizada
+ * (appearance: base-select); nos demais, a lista aberta é a nativa do sistema.
+ */
+.campo-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2302388e' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem;
+  padding-right: 3rem;
+  cursor: pointer;
+}
+
+@supports (appearance: base-select) {
+  .campo-select,
+  .campo-select::picker(select) {
+    appearance: base-select;
+  }
+  .campo-select {
+    background-image: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 1rem;
+  }
+  .campo-select::picker-icon {
+    color: var(--color-azul);
+    transition: rotate 0.2s ease;
+  }
+  .campo-select:open::picker-icon {
+    rotate: 180deg;
+  }
+  .campo-select::picker(select) {
+    margin-block: 0.375rem;
+    padding: 0.375rem;
+    border: 2px solid var(--color-borda);
+    border-radius: 1rem;
+    background: var(--color-branco);
+    box-shadow: 0 12px 32px rgb(11 26 51 / 0.14);
+  }
+  .campo-select option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.75rem;
+    color: var(--color-noite);
+    cursor: pointer;
+  }
+  .campo-select option:hover,
+  .campo-select option:focus-visible {
+    background: var(--color-creme);
+    outline: none;
+  }
+  .campo-select option:checked {
+    background: color-mix(in srgb, var(--color-azul) 10%, white);
+    color: var(--color-azul);
+    font-weight: 600;
+  }
+  .campo-select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--color-laranja-texto);
+  }
+}
+
+/* Caixas de marcar (checkbox) no padrão da marca */
+.campo-check {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+  border: 2px solid var(--color-borda);
+  border-radius: 0.4rem;
+  background: var(--color-branco);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+.campo-check::after {
+  content: '';
+  width: 0.8rem;
+  height: 0.8rem;
+  background: var(--color-branco);
+  clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 26%, 86% 12%, 38% 72%);
+  transform: scale(0);
+  transition: transform 0.15s ease;
+}
+.campo-check:checked {
+  background: var(--color-azul);
+  border-color: var(--color-azul);
+}
+.campo-check:checked::after {
+  transform: scale(1);
+}
+
+@layer components {
+  /* Corpo de texto das matérias (Markdown) */
+  .conteudo {
+    @apply prose prose-lg max-w-none;
+    --tw-prose-body: var(--color-noite);
+    --tw-prose-headings: var(--color-azul);
+    --tw-prose-links: var(--color-azul);
+    --tw-prose-bold: var(--color-noite);
+    --tw-prose-quotes: var(--color-azul);
+    --tw-prose-quote-borders: var(--color-laranja);
+    --tw-prose-bullets: var(--color-laranja-texto);
+    --tw-prose-counters: var(--color-laranja-texto);
+  }
+}

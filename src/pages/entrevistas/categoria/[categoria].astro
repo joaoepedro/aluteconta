@@ -1,0 +1,14 @@
+---
+import type { GetStaticPaths } from 'astro';
+import EntrevistasListagem from '@/components/listagens/EntrevistasListagem.astro';
+import { INTERVIEW_CATEGORIES, type InterviewCategory } from '@/lib/taxonomy';
+
+export const getStaticPaths = (() =>
+  Object.keys(INTERVIEW_CATEGORIES).map((categoria) => ({
+    params: { categoria },
+  }))) satisfies GetStaticPaths;
+
+const categoria = Astro.params.categoria as InterviewCategory;
+---
+
+<EntrevistasListagem categoria={categoria} />

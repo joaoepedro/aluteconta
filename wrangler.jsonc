@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aluteconta",
+  "compatibility_date": "2026-11-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Variáveis públicas (não secretas). Segredos: `npx wrangler secret put NOME`
+  // RESEND_API_KEY, TURNSTILE_SECRET_KEY → secretos
+  "vars": {
+    "CONTACT_TO_EMAIL": "contato@aluteconta.com.br",
+    "CONTACT_FROM_EMAIL": "site@aluteconta.com.br",
+  },
+}

@@ -1,0 +1,46 @@
+---
+import '@/styles/global.css';
+import Seo from '@/components/seo/Seo.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
+import Header from '@/components/layout/Header.astro';
+import { Footer } from '@/components/layout/Footer';
+import { SkipLink } from '@/components/layout/SkipLink';
+import { SITE } from '@/lib/site';
+import { organizationSchema } from '@/lib/seo';
+
+export interface Props {
+  title: string;
+  description: string;
+  image?: string | undefined;
+  type?: 'website' | 'article';
+  publishedTime?: Date | undefined;
+  noindex?: boolean;
+  /** JSON-LD extra desta página (artigo, evento, breadcrumb...) */
+  schema?: Record<string, unknown>[];
+}
+
+const { schema = [], ...seo } = Astro.props;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#02388E" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <Seo {...seo} />
+    <JsonLd data={[organizationSchema(), ...schema]} />
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <SkipLink />
+    <Header />
+    <main id="conteudo" tabindex="-1" class="flex-1 focus:outline-none">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

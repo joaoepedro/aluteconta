@@ -1,0 +1,110 @@
+---
+/** Layout das páginas de listagem (entrevistas, eventos, agenda...) */
+import type { ComponentType } from 'react';
+import BaseLayout from './BaseLayout.astro';
+import { Breadcrumbs } from '@/components/content/Breadcrumbs';
+import FilterScript from '@/components/content/FilterScript.astro';
+import { Container } from '@/components/ui/Container';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { Img } from '@/components/ui/Img';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { Spotlight } from '@/components/ui/Spotlight';
+import { breadcrumbSchema, type Crumb } from '@/lib/seo';
+import type { ResponsiveImage } from '@/lib/images';
+
+type IconType = ComponentType<{ className?: string }>;
+
+export interface Props {
+  title: string;
+  /** Título da aba/Google, se diferente do H1 */
+  seoTitle?: string;
+  description: string;
+  eyebrow?: string;
+  crumbs: Crumb[];
+  /** Ícone principal da página (selo ao lado do sobretítulo; e desenho grande quando não há foto) */
+  icon: IconType;
+  /** Ícones menores que flutuam ao redor do desenho grande */
+  accents?: [IconType?, IconType?];
+  /**
+   * Foto de fundo do topo (com véu creme para leitura). Quando informada,
+   * substitui o desenho grande de ícones (Spotlight). Para voltar ao desenho,
+   * basta não passar esta prop na página.
+   */
+  backgroundImage?: ResponsiveImage | undefined;
+  /** Enquadramento da foto (classe object-position do Tailwind), ex.: 'object-[50%_30%]' */
+  backgroundPosition?: string;
+  emptyMessage?: string;
+  isEmpty?: boolean;
+  /** Ativa a troca de filtros sem recarregar (páginas com FilterNav) */
+  filterable?: boolean;
+}
+
+const {
+  title,
+  seoTitle,
+  description,
+  eyebrow,
+  crumbs,
+  icon,
+  accents = [],
+  backgroundImage,
+  backgroundPosition = 'object-center',
+  emptyMessage = 'Em breve, novos conteúdos por aqui.',
+  isEmpty = false,
+  filterable = false,
+} = Astro.props;
+---
+
+<BaseLayout title={seoTitle ?? title} description={description} schema={[breadcrumbSchema(crumbs)]}>
+  <section
+    class:list={[
+      'relative overflow-hidden pt-8 sm:pt-12',
+      backgroundImage ? 'bg-creme pb-14 sm:pb-20' : 'bg-creme pb-10',
+    ]}
+  >
+    {backgroundImage && (
+      <>
+        {/* foto: fundo inteiro no celular/tablet; parte direita a partir de 1024 px */}
+        <div aria-hidden="true" class="absolute inset-y-0 right-0 w-full lg:w-[55%]">
+          <Img image={backgroundImage} priority className={backgroundPosition} />
+        </div>
+        {/* véu: celular/tablet quase opaco e uniforme; desktop sólido atrás do texto, abrindo para a foto */}
+        <div aria-hidden="true" class="bg-creme/90 absolute inset-0 lg:hidden" />
+        <div
+          aria-hidden="true"
+          class="from-creme via-creme to-creme/0 absolute inset-0 hidden bg-gradient-to-r via-50% to-85% lg:block"
+        />
+      </>
+    )}
+    <Container className="relative flex items-center justify-between gap-10">
+      <div class:list={['min-w-0', backgroundImage && 'lg:max-w-[34rem]']}>
+        <Breadcrumbs items={crumbs} />
+        <div data-filtro-titulo-wrap>
+          <SectionHeading
+            level="h1"
+            title={title}
+            description={description}
+            icon={icon}
+            className="mb-0"
+            {...(eyebrow ? { eyebrow } : {})}
+          />
+        </div>
+      </div>
+      {!backgroundImage && <Spotlight icon={icon} accents={accents} className="hidden lg:block" />}
+    </Container>
+  </section>
+
+  <Container className="pt-10 pb-20">
+    <slot name="filters" />
+    {isEmpty ? (
+      <div class="bg-creme flex flex-col items-center gap-4 rounded-2xl p-10 text-center">
+        <IconBadge icon={icon} size="lg" tone="laranja" animated />
+        <p class="text-noite/80 max-w-md text-lg">{emptyMessage}</p>
+      </div>
+    ) : (
+      <slot />
+    )}
+  </Container>
+  <slot name="after" />
+  {filterable && <FilterScript />}
+</BaseLayout>

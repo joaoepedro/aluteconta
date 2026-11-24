@@ -1,0 +1,150 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Breadcrumbs } from '@/components/content/Breadcrumbs';
+import { ButtonLink } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { Img } from '@/components/ui/Img';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { SocialLinks } from '@/components/ui/SocialLinks';
+import {
+  BookIcon,
+  CameraIcon,
+  HeartIcon,
+  LeafIcon,
+  MicIcon,
+  PeopleIcon,
+  SparkleIcon,
+} from '@/components/ui/icons';
+import { CoffeeCup } from '@/components/ui/CoffeeCup';
+import { responsiveImage } from '@/lib/images';
+import { breadcrumbSchema, personSchema } from '@/lib/seo';
+import { SITE, whatsappLink } from '@/lib/site';
+import retrato from '@/assets/lu-retrato.jpg';
+
+const photo = await responsiveImage(
+  retrato,
+  'Luciene Moraes, a Lú, segurando o microfone da A Lú Te Conta!',
+  'card',
+);
+const crumbs = [
+  { label: 'Início', href: '/' },
+  { label: 'Sobre a Lú', href: '/sobre' },
+];
+
+// TODO: revisar trajetória com a cliente (datas e marcos)
+const timeline = [
+  {
+    icon: PeopleIcon,
+    title: 'Educação Física e projetos sociais',
+    text: 'Formação em Educação Física e trabalho em ensino e projetos de inclusão social, esporte e dança.',
+  },
+  {
+    icon: BookIcon,
+    title: 'Colunista no Jornal Franca Hoje',
+    text: 'Coluna sobre saúde, negócios e estilo de vida.',
+  },
+  {
+    icon: MicIcon,
+    title: 'A Lú Te Conta!',
+    text: 'Entrevistas, cobertura de eventos e divulgação de marcas no site, Instagram e YouTube.',
+  },
+  {
+    icon: null,
+    title: 'Café Conexão',
+    text: 'Projeto próprio de encontros sobre comportamento, saúde, bem-estar e qualidade de vida.',
+  },
+];
+
+const topics = [
+  { label: 'Saúde física e mental', icon: HeartIcon },
+  { label: 'Bem-estar e qualidade de vida', icon: LeafIcon },
+  { label: 'Empreendedorismo e inovação', icon: SparkleIcon },
+  { label: 'Histórias inspiradoras', icon: CameraIcon },
+];
+---
+
+<BaseLayout
+  title="Sobre a Lú"
+  description="Conheça Luciene Moraes, a Lú: comunicadora, colunista social digital e apresentadora da A Lú Te Conta! em Franca."
+  schema={[breadcrumbSchema(crumbs), personSchema()]}
+>
+  <Container className="pt-8 pb-16 sm:pt-12">
+    <Breadcrumbs items={crumbs} />
+    <div class="grid items-start gap-10 md:grid-cols-[1fr_1.3fr]">
+      <div class="relative">
+        <div class="aspect-[4/5] overflow-hidden rounded-[2rem]">
+          <Img image={photo} priority className="object-top" />
+        </div>
+        <IconBadge
+          icon={MicIcon}
+          tone="laranja"
+          size="lg"
+          animated
+          className="absolute -top-4 -right-3 shadow-lg sm:-right-5"
+        />
+        <IconBadge
+          icon={SparkleIcon}
+          tone="azul"
+          size="md"
+          className="bg-branco absolute -bottom-4 -left-3 shadow-lg"
+        />
+      </div>
+      <div>
+        <p class="text-laranja-texto text-sm font-semibold tracking-wide uppercase">Sobre a Lú</p>
+        <h1 class="mt-2 text-4xl sm:text-5xl">{SITE.person.name}</h1>
+        <p class="text-cinza mt-2 text-lg">{SITE.person.jobTitle}</p>
+        <div class="conteudo mt-6">
+          <p>
+            A Lú acredita que conhecimento compartilhado transforma vidas e inspira mudanças.
+            Formada em Educação Física, começou no ensino e em projetos de inclusão social, esporte
+            e dança, e encontrou na comunicação o caminho para conectar pessoas, marcas e
+            comunidade.
+          </p>
+          <p>
+            Na A Lú Te Conta! ela entrevista empreendedores, artistas e profissionais, cobre os
+            eventos que movimentam Franca e região e criou o Café Conexão, encontro dedicado a
+            saúde, bem-estar e qualidade de vida.
+          </p>
+        </div>
+        <h2 class="mt-8 text-xl">Sobre o que a Lú conta</h2>
+        <ul class="mt-3 flex flex-wrap gap-2">
+          {topics.map((t) => (
+            <li class="bg-creme text-noite inline-flex items-center gap-2 rounded-full py-2 pr-4 pl-3 text-sm font-semibold">
+              <t.icon className="text-laranja-texto size-4" />
+              {t.label}
+            </li>
+          ))}
+        </ul>
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <ButtonLink href={whatsappLink('Olá, Lú! Vim pelo site.')} variant="accent">
+            Falar com a Lú
+          </ButtonLink>
+          <SocialLinks networks={['instagram', 'youtube']} />
+        </div>
+      </div>
+    </div>
+
+    <section aria-labelledby="trajetoria" class="mt-20">
+      <h2 id="trajetoria" class="mb-8 text-3xl">
+        Trajetória
+      </h2>
+      <ol class="border-laranja/40 relative ml-6 space-y-10 border-l-2 border-dashed pl-10">
+        {timeline.map((item) => (
+          <li class="relative">
+            <span
+              aria-hidden="true"
+              class:list={[
+                'absolute top-0 -left-[4.1rem] flex size-12 items-center justify-center rounded-2xl shadow-md',
+                item.icon ? 'bg-azul text-branco' : 'bg-creme ring-laranja ring-2',
+              ]}
+            >
+              {item.icon ? <item.icon className="size-6" /> : <CoffeeCup className="w-9" />}
+            </span>
+            <h3 class="text-xl">{item.title}</h3>
+            <p class="text-noite/80 mt-1">{item.text}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  </Container>
+</BaseLayout>

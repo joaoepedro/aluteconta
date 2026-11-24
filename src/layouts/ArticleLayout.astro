@@ -1,0 +1,64 @@
+---
+/**
+ * Layout das páginas de conteúdo (entrevista, cobertura, edição, marca).
+ * Monta: trilha, título, meta, capa, corpo em Markdown e um espaço para extras.
+ */
+import BaseLayout from './BaseLayout.astro';
+import { Breadcrumbs } from '@/components/content/Breadcrumbs';
+import { Container } from '@/components/ui/Container';
+import { Img } from '@/components/ui/Img';
+import { breadcrumbSchema, type Crumb } from '@/lib/seo';
+import type { ResponsiveImage } from '@/lib/images';
+
+export interface Props {
+  title: string;
+  description: string;
+  crumbs: Crumb[];
+  cover?: ResponsiveImage | undefined;
+  ogImage?: string | undefined;
+  publishedTime?: Date | undefined;
+  schema?: Record<string, unknown>[];
+}
+
+const { title, description, crumbs, cover, ogImage, publishedTime, schema = [] } = Astro.props;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={ogImage}
+  type="article"
+  publishedTime={publishedTime}
+  schema={[breadcrumbSchema(crumbs), ...schema]}
+>
+  <article class="pb-20">
+    <header class="bg-creme pt-8 pb-10 sm:pt-12">
+      <Container size="text">
+        <Breadcrumbs items={crumbs} />
+        <slot name="eyebrow" />
+        <h1 class="text-3xl sm:text-5xl">{title}</h1>
+        <p class="text-cinza mt-4 text-lg sm:text-xl">{description}</p>
+        <div class="mt-5">
+          <slot name="meta" />
+        </div>
+      </Container>
+    </header>
+
+    {cover && (
+      <Container size="default" className="-mt-2 sm:mt-8">
+        <figure class="aspect-[16/9] overflow-hidden rounded-2xl">
+          <Img image={cover} priority />
+        </figure>
+      </Container>
+    )}
+
+    <Container size="text" className="mt-10">
+      <slot name="before-content" />
+      <div class="conteudo">
+        <slot />
+      </div>
+      <slot name="after-content" />
+    </Container>
+  </article>
+  <slot name="related" />
+</BaseLayout>
